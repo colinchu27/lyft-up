@@ -2,20 +2,35 @@
 //  ContentView.swift
 //  lyft-up
 //
-//  Created by Colin Chu on 8/6/25.
+//  Created by Colin Chu on 8/1/25.
 //
 
 import SwiftUI
 
 struct ContentView: View {
+    @StateObject private var workoutStorage = WorkoutStorage()
+    
     var body: some View {
-        VStack {
-            Image(systemName: "globe")
-                .imageScale(.large)
-                .foregroundStyle(.tint)
-            Text("Hello, world!")
+        TabView {
+            HomeView()
+                .tabItem {
+                    Image(systemName: "house.fill")
+                    Text("Home")
+                }
+            
+            LogWorkoutView()
+                .environmentObject(workoutStorage)
+                .tabItem {
+                    Image(systemName: "dumbbell.fill")
+                    Text("Log Workout")
+                }
+            
+            ProfileView()
+                .tabItem {
+                    Image(systemName: "person.fill")
+                    Text("Profile")
+                }
         }
-        .padding()
     }
 }
 
