@@ -1,4 +1,4 @@
-# Lyft-Up 🚀  
+# Lyft-Up 🚀  (In Progress)
 **Track your lifts. Follow your friends. Stay accountable.**
 
 ---
@@ -8,9 +8,9 @@
 Lyft-Up is an iOS app that combines clean workout tracking with social features to help you and your friends stay consistent and motivated in the gym.
 
 Inspired by apps like **RepCount**, Lyft-Up lets you build your own routines, log sets/reps/weights, and automatically reference your last performance to push yourself further — but with a twist:  
-👥 You can follow friends, see their workout history, and share your own progress.
+👥 You can follow friends, see their workout history, and share your own progress!
 
-This is my **first iOS app** built from scratch using SwiftUI. It's a personal project meant to solve a real user need I’ve experienced: making workouts more interactive, social, and accountable — without the bloat or distractions of other fitness apps.
+This is my **first iOS app** built from scratch using SwiftUI. It's a personal project meant to solve a real user need I’ve experienced: making workouts more interactive, social, and accountable, without the bloat or distractions of other fitness apps.
 
 ---
 
