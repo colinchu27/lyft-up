@@ -9,6 +9,7 @@ import SwiftUI
 
 struct ContentView: View {
     @StateObject private var workoutStorage = WorkoutStorage()
+    @StateObject private var sessionStorage = WorkoutSessionStorage()
     
     var body: some View {
         TabView {
@@ -18,11 +19,12 @@ struct ContentView: View {
                     Text("Home")
                 }
             
-            LogWorkoutView()
+            RoutineBuilderView()
                 .environmentObject(workoutStorage)
+                .environmentObject(sessionStorage)
                 .tabItem {
-                    Image(systemName: "dumbbell.fill")
-                    Text("Log Workout")
+                    Image(systemName: "list.bullet.clipboard")
+                    Text("Routines")
                 }
             
             ProfileView()

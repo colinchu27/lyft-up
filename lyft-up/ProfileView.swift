@@ -8,6 +8,8 @@
 import SwiftUI
 
 struct ProfileView: View {
+    @State private var showingWorkoutHistory = false
+    
     var body: some View {
         NavigationView {
             ScrollView {
@@ -82,19 +84,26 @@ struct ProfileView: View {
                             .padding(.horizontal, 20)
                         
                         VStack(spacing: 12) {
-                            HStack {
-                                Image(systemName: "calendar")
-                                    .foregroundColor(.blue)
-                                    .frame(width: 24)
-                                Text("Recent Workouts")
-                                Spacer()
-                                Text("View All")
-                                    .foregroundColor(.blue)
-                                    .font(.caption)
+                            Button(action: { showingWorkoutHistory = true }) {
+                                HStack {
+                                    Image(systemName: "clock.arrow.circlepath")
+                                        .foregroundColor(.blue)
+                                        .frame(width: 24)
+                                    Text("View Workout History")
+                                    Spacer()
+                                    Image(systemName: "chevron.right")
+                                        .foregroundColor(.blue)
+                                        .font(.caption)
+                                }
+                                .foregroundColor(.primary)
+                                .padding(.horizontal, 20)
+                                .padding(.vertical, 12)
+                                .background(Color(.systemGray6))
+                                .cornerRadius(8)
                             }
-                            .padding(.horizontal, 20)
+                            .buttonStyle(PlainButtonStyle())
                             
-                            Text("Your workout history will appear here")
+                            Text("Track your progress and review past workouts")
                                 .font(.subheadline)
                                 .foregroundColor(.secondary)
                                 .padding(.horizontal, 20)
@@ -139,6 +148,9 @@ struct ProfileView: View {
                 }
             }
             .navigationTitle("Profile")
+            .sheet(isPresented: $showingWorkoutHistory) {
+                WorkoutHistoryView()
+            }
         }
     }
 }
