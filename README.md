@@ -39,8 +39,40 @@ Most gym apps either feel too bloated or too isolated. They don’t help you sta
 - SwiftUI (UI)
 - Xcode
 - MVVM architecture (as project scales)
-- Local data persistence (Core Data / FileManager - TBD)
+- Firebase (Authentication & Firestore)
+- Local data persistence (UserDefaults)
 - iOS Simulator for dev/testing
+
+## 🔐 Security & Setup
+
+### Firebase Configuration
+This app uses Firebase for authentication and data storage. To set up the project:
+
+1. **Download your Firebase config file:**
+   - Go to [Firebase Console](https://console.firebase.google.com/)
+   - Create a new project or select existing one
+   - Add an iOS app with your bundle ID
+   - Download `GoogleService-Info.plist`
+
+2. **Add the config file to your project:**
+   - Place `GoogleService-Info.plist` in the `lyft-up/` directory
+   - **IMPORTANT:** This file contains sensitive API keys and should never be committed to version control
+   - The file is already added to `.gitignore` to prevent accidental commits
+
+3. **Enable Authentication:**
+   - In Firebase Console, go to Authentication > Sign-in method
+   - Enable Email/Password authentication
+
+### Security Notes
+- ✅ No sensitive data is logged to console
+- ✅ API keys are properly excluded from version control
+- ✅ User passwords are handled securely through Firebase Auth
+- ✅ All user data is stored in Firebase Firestore with proper authentication
+
+### Development Setup
+1. Clone the repository
+2. Add your `GoogleService-Info.plist` file
+3. Build and run in Xcode
 
 
 

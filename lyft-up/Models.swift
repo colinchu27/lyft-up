@@ -17,14 +17,21 @@ struct Workout: Codable, Identifiable {
     let date: Date
 }
 
-struct User: Codable, Identifiable {
-    let id = UUID()
+struct UserProfile: Codable, Identifiable {
+    let id: String
     let username: String
-    var friendIds: [UUID]
+    let firstName: String
+    let lastName: String
+    let bio: String
+    var friendIds: [String]
     let createdAt: Date
     
-    init(username: String) {
+    init(id: String, username: String, firstName: String = "", lastName: String = "", bio: String = "") {
+        self.id = id
         self.username = username
+        self.firstName = firstName
+        self.lastName = lastName
+        self.bio = bio
         self.friendIds = []
         self.createdAt = Date()
     }
@@ -32,11 +39,11 @@ struct User: Codable, Identifiable {
 
 struct Friend: Codable, Identifiable {
     let id = UUID()
-    let userId: UUID
-    let friendId: UUID
+    let userId: String
+    let friendId: String
     let friendshipDate: Date
     
-    init(userId: UUID, friendId: UUID) {
+    init(userId: String, friendId: String) {
         self.userId = userId
         self.friendId = friendId
         self.friendshipDate = Date()
@@ -45,11 +52,11 @@ struct Friend: Codable, Identifiable {
 
 struct WorkoutHistory: Codable, Identifiable {
     let id = UUID()
-    let userId: UUID
+    let userId: String
     var workouts: [Workout]
     let createdAt: Date
     
-    init(userId: UUID) {
+    init(userId: String) {
         self.userId = userId
         self.workouts = []
         self.createdAt = Date()

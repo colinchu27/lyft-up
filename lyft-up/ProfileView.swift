@@ -8,7 +8,9 @@
 import SwiftUI
 
 struct ProfileView: View {
+    @StateObject private var firebaseService = FirebaseService.shared
     @State private var showingWorkoutHistory = false
+    @State private var showingSignOutAlert = false
     
     var body: some View {
         NavigationView {
@@ -20,13 +22,18 @@ struct ProfileView: View {
                             .font(.system(size: 80))
                             .foregroundColor(.blue)
                         
-                        Text("John Doe")
+                        Text(userDisplayName)
                             .font(.title2)
                             .fontWeight(.semibold)
                         
-                        Text("Fitness Enthusiast")
+                        Text(userEmail)
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                        
+                        Text(userBio)
                             .font(.subheadline)
                             .foregroundColor(.secondary)
+                            .multilineTextAlignment(.center)
                     }
                     .padding(.top, 20)
                     
@@ -44,7 +51,7 @@ struct ProfileView: View {
                                     .frame(width: 24)
                                 Text("Workout Streak")
                                 Spacer()
-                                Text("5 days")
+                                Text("0 days")
                                     .foregroundColor(.secondary)
                             }
                             .padding(.horizontal, 20)
@@ -55,7 +62,7 @@ struct ProfileView: View {
                                     .frame(width: 24)
                                 Text("Total Workouts")
                                 Spacer()
-                                Text("23")
+                                Text("0")
                                     .foregroundColor(.secondary)
                             }
                             .padding(.horizontal, 20)
@@ -66,7 +73,7 @@ struct ProfileView: View {
                                     .frame(width: 24)
                                 Text("Goals Achieved")
                                 Spacer()
-                                Text("8")
+                                Text("0")
                                     .foregroundColor(.secondary)
                             }
                             .padding(.horizontal, 20)
@@ -128,7 +135,7 @@ struct ProfileView: View {
                                     .frame(width: 24)
                                 Text("Workout Buddies")
                                 Spacer()
-                                Text("12 friends")
+                                Text("0 friends")
                                     .foregroundColor(.secondary)
                             }
                             .padding(.horizontal, 20)
@@ -147,10 +154,74 @@ struct ProfileView: View {
                     Spacer(minLength: 20)
                 }
             }
-            .navigationTitle("Profile")
+                               .navigationTitle("Profile")
+                   .navigationBarTitleDisplayMode(.large)
+                   .toolbar {
+                       ToolbarItem(placement: .navigationBarLeading) {
+                           Button("Edit Profile") {
+                               firebaseService.startOnboarding()
+                           }
+                           .foregroundColor(.blue)
+                       }
+                       
+                       ToolbarItem(placement: .navigationBarTrailing) {
+                           Button("Sign Out") {
+                               showingSignOutAlert = true
+                           }
+                           .foregroundColor(.red)
+                       }
+                   }
             .sheet(isPresented: $showingWorkoutHistory) {
                 WorkoutHistoryView()
             }
+            .alert("Sign Out", isPresented: $showingSignOutAlert) {
+                Button("Cancel", role: .cancel) { }
+                Button("Sign Out", role: .destructive) {
+                    signOut()
+                }
+            } message: {
+                Text("Are you sure you want to sign out?")
+            }
+            .onAppear {
+                // Only refresh if we don't have profile data yet
+                if firebaseService.userProfile == nil {
+                    Task {
+                        await firebaseService.refreshUserProfile()
+                    }
+                }
+            }
+        }
+    }
+    
+    private var userDisplayName: String {
+        if let profile = firebaseService.userProfile {
+            if !profile.firstName.isEmpty && !profile.lastName.isEmpty {
+                return "\(profile.firstName) \(profile.lastName)"
+            } else if !profile.firstName.isEmpty {
+                return profile.firstName
+            } else {
+                return profile.username
+            }
+        }
+        return "User"
+    }
+    
+    private var userEmail: String {
+        return firebaseService.currentUser?.email ?? "No email"
+    }
+    
+    private var userBio: String {
+        if let profile = firebaseService.userProfile, !profile.bio.isEmpty {
+            return profile.bio
+        }
+        return "Fitness enthusiast"
+    }
+    
+    private func signOut() {
+        do {
+            try firebaseService.signOut()
+        } catch {
+            print("Error signing out: \(error)")
         }
     }
 }
