@@ -17,6 +17,8 @@ struct WorkoutSessionView: View {
     @State private var showingSummary = false
     @State private var exerciseSessions: [String: [WorkoutSet]] = [:]
     @State private var deletedExercises: Set<String> = []
+    @State private var addedExercises: [RoutineExercise] = []
+    @State private var showingAddExercise = false
     @State private var completedSession: WorkoutSession?
     
     init(routine: Routine) {
@@ -43,6 +45,13 @@ struct WorkoutSessionView: View {
         .navigationTitle("Workout Session")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
+            ToolbarItem(placement: .navigationBarLeading) {
+                Button(action: { showingAddExercise = true }) {
+                    Image(systemName: "plus.circle.fill")
+                        .font(.title2)
+                }
+            }
+            
             ToolbarItem(placement: .navigationBarTrailing) {
                 Button("End") {
                     showingEndWorkout = true
@@ -59,6 +68,12 @@ struct WorkoutSessionView: View {
         }
         .fullScreenCover(isPresented: $showingSummary) {
             summaryView
+        }
+        .sheet(isPresented: $showingAddExercise) {
+            AddExerciseToWorkoutView { exercise in
+                addedExercises.append(exercise)
+                showingAddExercise = false
+            }
         }
     }
     
@@ -91,17 +106,24 @@ struct WorkoutSessionView: View {
     }
     
     private var activeExerciseCount: Int {
-        routine.exercises.filter { !deletedExercises.contains($0.name) }.count
+        let routineExercises = routine.exercises.filter { !deletedExercises.contains($0.name) }.count
+        return routineExercises + addedExercises.count
     }
     
     private var exercisesList: some View {
         ScrollView {
             LazyVStack(spacing: 16) {
+                // Routine exercises
                 ForEach(routine.exercises.indices, id: \.self) { index in
                     let exercise = routine.exercises[index]
                     if !deletedExercises.contains(exercise.name) {
                         exerciseCard(for: index)
                     }
+                }
+                
+                // Added exercises
+                ForEach(addedExercises.indices, id: \.self) { index in
+                    addedExerciseCard(for: index)
                 }
             }
             .padding()
@@ -119,6 +141,22 @@ struct WorkoutSessionView: View {
                 deletedExercises.insert(routine.exercises[index].name)
                 // Remove from exercise sessions if it exists
                 exerciseSessions.removeValue(forKey: routine.exercises[index].name)
+            }
+        )
+    }
+    
+    private func addedExerciseCard(for index: Int) -> some View {
+        WorkoutExerciseCard(
+            exercise: addedExercises[index],
+            sessionStorage: sessionStorage,
+            onSetsChanged: { sets in
+                exerciseSessions[addedExercises[index].name] = sets
+            },
+            onDelete: {
+                // Remove from added exercises and exercise sessions
+                let exerciseName = addedExercises[index].name
+                addedExercises.remove(at: index)
+                exerciseSessions.removeValue(forKey: exerciseName)
             }
         )
     }
