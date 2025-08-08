@@ -112,8 +112,12 @@ struct WorkoutSessionExercise: Codable, Identifiable {
     
     init(exerciseName: String, numberOfSets: Int) {
         self.exerciseName = exerciseName
-        self.sets = (1...numberOfSets).map { setNumber in
-            WorkoutSet(setNumber: setNumber)
+        if numberOfSets > 0 {
+            self.sets = (1...numberOfSets).map { setNumber in
+                WorkoutSet(setNumber: setNumber)
+            }
+        } else {
+            self.sets = []
         }
     }
 }

@@ -16,6 +16,7 @@ struct WorkoutSessionView: View {
     @State private var showingEndWorkout = false
     @State private var showingSummary = false
     @State private var exerciseSessions: [String: [WorkoutSet]] = [:]
+    @State private var deletedExercises: Set<String> = []
     @State private var completedSession: WorkoutSession?
     
     init(routine: Routine) {
@@ -77,7 +78,7 @@ struct WorkoutSessionView: View {
                 .font(.title2)
                 .fontWeight(.bold)
             
-            Text("\(routine.exercises.count) exercises")
+            Text("\(activeExerciseCount) exercises")
                 .font(.subheadline)
                 .foregroundColor(.secondary)
             
@@ -89,11 +90,18 @@ struct WorkoutSessionView: View {
         .background(Color(.systemGray6))
     }
     
+    private var activeExerciseCount: Int {
+        routine.exercises.filter { !deletedExercises.contains($0.name) }.count
+    }
+    
     private var exercisesList: some View {
         ScrollView {
             LazyVStack(spacing: 16) {
                 ForEach(routine.exercises.indices, id: \.self) { index in
-                    exerciseCard(for: index)
+                    let exercise = routine.exercises[index]
+                    if !deletedExercises.contains(exercise.name) {
+                        exerciseCard(for: index)
+                    }
                 }
             }
             .padding()
@@ -106,6 +114,11 @@ struct WorkoutSessionView: View {
             sessionStorage: sessionStorage,
             onSetsChanged: { sets in
                 exerciseSessions[routine.exercises[index].name] = sets
+            },
+            onDelete: {
+                deletedExercises.insert(routine.exercises[index].name)
+                // Remove from exercise sessions if it exists
+                exerciseSessions.removeValue(forKey: routine.exercises[index].name)
             }
         )
     }
@@ -142,12 +155,23 @@ struct WorkoutSessionView: View {
         session.endTime = Date()
         session.isCompleted = true
         
+        print("Exercise sessions data: \(exerciseSessions)")
+        
         // Convert exercise sessions to WorkoutSessionExercise format
         session.exercises = exerciseSessions.map { exerciseName, sets in
-            var sessionExercise = WorkoutSessionExercise(exerciseName: exerciseName, numberOfSets: sets.count)
+            print("Processing exercise: \(exerciseName) with \(sets.count) sets")
+            sets.forEach { set in
+                print("  Set \(set.setNumber): \(set.weight) lbs x \(set.reps) reps")
+            }
+            
+            // Create a new exercise with the actual sets data
+            var sessionExercise = WorkoutSessionExercise(exerciseName: exerciseName, numberOfSets: 0)
             sessionExercise.sets = sets
             return sessionExercise
         }
+        
+        print("Deleted exercises: \(deletedExercises)")
+        print("Final session exercises: \(session.exercises.count)")
         
         // Save the session
         sessionStorage.saveSession(session)
@@ -162,8 +186,10 @@ struct WorkoutExerciseCard: View {
     let exercise: RoutineExercise
     let sessionStorage: WorkoutSessionStorage
     let onSetsChanged: ([WorkoutSet]) -> Void
+    let onDelete: () -> Void
     @State private var sets: [WorkoutSet] = []
     @State private var showingAddSet = false
+    @State private var showingDeleteAlert = false
     
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
@@ -178,6 +204,14 @@ struct WorkoutExerciseCard: View {
         .onAppear {
             initializeSets()
         }
+        .alert("Remove Exercise", isPresented: $showingDeleteAlert) {
+            Button("Cancel", role: .cancel) { }
+            Button("Remove", role: .destructive) {
+                onDelete()
+            }
+        } message: {
+            Text("Remove '\(exercise.name)' from this workout? This won't affect your routine.")
+        }
     }
     
     private var exerciseHeader: some View {
@@ -189,6 +223,12 @@ struct WorkoutExerciseCard: View {
             Spacer()
             
             lastWorkoutReference
+            
+            Button(action: { showingDeleteAlert = true }) {
+                Image(systemName: "minus.circle.fill")
+                    .foregroundColor(.red)
+                    .font(.title3)
+            }
         }
     }
     
@@ -227,6 +267,9 @@ struct WorkoutExerciseCard: View {
                             sets.remove(at: setIndex)
                             onSetsChanged(sets)
                         }
+                    },
+                    onDataChanged: {
+                        onSetsChanged(sets)
                     }
                 )
             }
@@ -267,6 +310,7 @@ struct WorkoutSetRow: View {
     let isLastSet: Bool
     let onComplete: () -> Void
     let onDelete: () -> Void
+    let onDataChanged: () -> Void
     
     @State private var weightText: String = ""
     @State private var repsText: String = ""
@@ -410,12 +454,14 @@ struct WorkoutSetRow: View {
         } else if let weight = Double(newValue) {
             set.weight = weight
         }
+        onDataChanged()
     }
     
     private func updateReps(_ newValue: String) {
         if let reps = Int(newValue) {
             set.reps = reps
         }
+        onDataChanged()
     }
     
     private func completeSet() {

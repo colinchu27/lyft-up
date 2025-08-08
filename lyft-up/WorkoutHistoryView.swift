@@ -54,7 +54,7 @@ struct WorkoutHistoryView: View {
         List {
             ForEach(groupedSessions.keys.sorted(by: >), id: \.self) { date in
                 Section(header: Text(formatDate(date))) {
-                    ForEach(groupedSessions[date] ?? [], id: \.id) { session in
+                    ForEach(sortedSessionsForDate(date), id: \.id) { session in
                         WorkoutHistoryRow(session: session) {
                             selectedSession = session
                             showingSessionDetail = true
@@ -66,8 +66,16 @@ struct WorkoutHistoryView: View {
         .listStyle(InsetGroupedListStyle())
     }
     
+    private func sortedSessionsForDate(_ date: Date) -> [WorkoutSession] {
+        return (groupedSessions[date] ?? []).sorted { $0.startTime > $1.startTime }
+    }
+    
     private var groupedSessions: [Date: [WorkoutSession]] {
         let sessions = sessionStorage.sessions
+        print("WorkoutHistoryView - Loaded \(sessions.count) sessions")
+        sessions.forEach { session in
+            print("  Session: \(session.routineName), Exercises: \(session.exercises.count)")
+        }
         return Dictionary(grouping: sessions) { session in
             Calendar.current.startOfDay(for: session.startTime)
         }
@@ -147,6 +155,15 @@ struct WorkoutSessionDetailView: View {
     @Environment(\.dismiss) private var dismiss
     
     var body: some View {
+        let _ = print("WorkoutSessionDetailView - Session: \(session.routineName), Exercises: \(session.exercises.count)")
+        session.exercises.forEach { exercise in
+            let _ = print("  Exercise: \(exercise.exerciseName), Sets: \(exercise.sets.count)")
+            exercise.sets.forEach { set in
+                let _ = print("    Set \(set.setNumber): \(set.weight) lbs x \(set.reps) reps")
+            }
+        }
+        
+        return
         NavigationView {
             ScrollView {
                 VStack(spacing: 24) {
@@ -254,7 +271,7 @@ struct WorkoutSessionDetailView: View {
     
     private var exercisesList: some View {
         VStack(spacing: 16) {
-            ForEach(session.exercises, id: \.exerciseName) { exercise in
+            ForEach(session.exercises, id: \.id) { exercise in
                 ExerciseDetailCard(exercise: exercise)
             }
         }
@@ -308,10 +325,9 @@ struct ExerciseDetailCard: View {
                 .fontWeight(.semibold)
             
             VStack(spacing: 8) {
-                ForEach(exercise.sets.indices, id: \.self) { index in
-                    let set = exercise.sets[index]
+                ForEach(exercise.sets, id: \.id) { set in
                     HStack {
-                        Text("Set \(index + 1)")
+                        Text("Set \(set.setNumber)")
                             .font(.subheadline)
                             .fontWeight(.medium)
                             .frame(width: 60, alignment: .leading)
