@@ -11,6 +11,7 @@ struct ProfileView: View {
     @StateObject private var firebaseService = FirebaseService.shared
     @State private var showingWorkoutHistory = false
     @State private var showingSignOutAlert = false
+    @State private var showingEditProfile = false
     
     var body: some View {
         NavigationView {
@@ -159,7 +160,7 @@ struct ProfileView: View {
                    .toolbar {
                        ToolbarItem(placement: .navigationBarLeading) {
                            Button("Edit Profile") {
-                               firebaseService.startOnboarding()
+                               showingEditProfile = true
                            }
                            .foregroundColor(.blue)
                        }
@@ -173,6 +174,9 @@ struct ProfileView: View {
                    }
             .sheet(isPresented: $showingWorkoutHistory) {
                 WorkoutHistoryView()
+            }
+            .sheet(isPresented: $showingEditProfile) {
+                EditProfileView()
             }
             .alert("Sign Out", isPresented: $showingSignOutAlert) {
                 Button("Cancel", role: .cancel) { }
