@@ -10,6 +10,7 @@ import SwiftUI
 struct WorkoutSessionView: View {
     let routine: Routine
     @StateObject private var sessionStorage = WorkoutSessionStorage()
+    @StateObject private var statsStorage = WorkoutStatsStorage.shared
     @Environment(\.dismiss) private var dismiss
     
     @State private var currentSession: WorkoutSession
@@ -213,6 +214,9 @@ struct WorkoutSessionView: View {
         
         // Save the session
         sessionStorage.saveSession(session)
+        
+        // Increment total workouts counter
+        statsStorage.incrementTotalWorkouts()
         
         // Store completed session and show summary
         completedSession = session

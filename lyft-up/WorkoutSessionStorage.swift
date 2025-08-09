@@ -8,6 +8,43 @@
 import Foundation
 import SwiftUI
 
+// MARK: - Workout Statistics Storage Manager
+class WorkoutStatsStorage: ObservableObject {
+    static let shared = WorkoutStatsStorage()
+    
+    @Published var stats: WorkoutStats
+    private let userDefaults = UserDefaults.standard
+    private let statsKey = "workoutStats"
+    
+    init() {
+        self.stats = WorkoutStats()
+        loadStats()
+    }
+    
+    func incrementTotalWorkouts() {
+        stats.totalWorkouts += 1
+        stats.lastWorkoutDate = Date()
+        saveStats()
+    }
+    
+    func getTotalWorkouts() -> Int {
+        return stats.totalWorkouts
+    }
+    
+    private func saveStats() {
+        if let encoded = try? JSONEncoder().encode(stats) {
+            userDefaults.set(encoded, forKey: statsKey)
+        }
+    }
+    
+    private func loadStats() {
+        if let data = userDefaults.data(forKey: statsKey),
+           let decoded = try? JSONDecoder().decode(WorkoutStats.self, from: data) {
+            stats = decoded
+        }
+    }
+}
+
 // MARK: - Workout Session Storage Manager
 class WorkoutSessionStorage: ObservableObject {
     @Published var sessions: [WorkoutSession] = []

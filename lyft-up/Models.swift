@@ -140,3 +140,16 @@ struct WorkoutSet: Codable, Identifiable {
         self.setNumber = setNumber
     }
 }
+
+// MARK: - Workout Statistics Model
+struct WorkoutStats: Codable {
+    var totalWorkouts: Int
+    var lastWorkoutDate: Date?
+    var goalsAchieved: Int
+    
+    init() {
+        self.totalWorkouts = 0
+        self.lastWorkoutDate = nil
+        self.goalsAchieved = 0
+    }
+}

@@ -9,6 +9,7 @@ import SwiftUI
 
 struct ProfileView: View {
     @StateObject private var firebaseService = FirebaseService.shared
+    @StateObject private var statsStorage = WorkoutStatsStorage.shared
     @State private var showingWorkoutHistory = false
     @State private var showingSignOutAlert = false
     @State private var showingEditProfile = false
@@ -52,7 +53,7 @@ struct ProfileView: View {
                                     .frame(width: 24)
                                 Text("Total Workouts")
                                 Spacer()
-                                Text("0")
+                                Text("\(statsStorage.stats.totalWorkouts)")
                                     .foregroundColor(.secondary)
                             }
                             .padding(.horizontal, 20)
