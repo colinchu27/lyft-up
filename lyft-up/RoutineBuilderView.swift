@@ -94,43 +94,46 @@ struct RoutineRowView: View {
             
             Spacer()
             
-            HStack(spacing: 8) {
-                Button(action: { showingRoutineDetail = true }) {
+            HStack(spacing: 12) {
+                Button(action: {
+                    print("Edit button pressed")
+                    showingRoutineDetail = true
+                    showingWorkoutSession = false
+                }) {
                     Text("Edit")
                         .font(.caption)
                         .fontWeight(.medium)
                         .foregroundColor(.blue)
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 6)
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 8)
                         .background(Color.blue.opacity(0.1))
                         .cornerRadius(8)
                 }
+                .buttonStyle(PlainButtonStyle())
                 
-                Button(action: { showingWorkoutSession = true }) {
+                Button(action: {
+                    print("Start Workout button pressed")
+                    showingWorkoutSession = true
+                    showingRoutineDetail = false
+                }) {
                     Text("Start Workout")
                         .font(.caption)
                         .fontWeight(.medium)
                         .foregroundColor(.white)
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 6)
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 8)
                         .background(Color.blue)
                         .cornerRadius(8)
                 }
+                .buttonStyle(PlainButtonStyle())
             }
         }
         .padding(.vertical, 4)
-        .sheet(isPresented: $showingRoutineDetail, onDismiss: {
-            showingWorkoutSession = false
-        }) {
+        .sheet(isPresented: $showingRoutineDetail) {
             RoutineDetailView(routine: routine, routineStorage: routineStorage)
         }
         .fullScreenCover(isPresented: $showingWorkoutSession) {
             WorkoutSessionView(routine: routine)
-        }
-        .onChange(of: showingRoutineDetail) { isShowing in
-            if isShowing {
-                showingWorkoutSession = false
-            }
         }
     }
 }
@@ -450,10 +453,12 @@ struct RoutineDetailView: View {
                 ToolbarItem(placement: .navigationBarLeading) {
                     if isEditing {
                         Button("Cancel") {
+                            print("Cancel edit pressed")
                             cancelEdit()
                         }
                     } else {
                         Button("Done") {
+                            print("Done button pressed - dismissing RoutineDetailView")
                             dismiss()
                         }
                     }
