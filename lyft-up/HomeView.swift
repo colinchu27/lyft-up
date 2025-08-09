@@ -29,7 +29,7 @@ struct HomeView: View {
                     .foregroundColor(.secondary)
                 
                 // User welcome message
-                if let profile = firebaseService.userProfile {
+                if firebaseService.userProfile != nil {
                     VStack(spacing: 8) {
                         Text("Welcome back,")
                             .font(.headline)

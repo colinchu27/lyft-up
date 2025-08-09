@@ -24,16 +24,16 @@ struct UserProfile: Codable, Identifiable {
     let lastName: String
     let bio: String
     var friendIds: [String]
-    let createdAt: Date
+    var createdAt: Date
     
-    init(id: String, username: String, firstName: String = "", lastName: String = "", bio: String = "") {
+    init(id: String, username: String, firstName: String = "", lastName: String = "", bio: String = "", friendIds: [String] = [], createdAt: Date = Date()) {
         self.id = id
         self.username = username
         self.firstName = firstName
         self.lastName = lastName
         self.bio = bio
-        self.friendIds = []
-        self.createdAt = Date()
+        self.friendIds = friendIds
+        self.createdAt = createdAt
     }
 }
 
@@ -51,10 +51,10 @@ struct Friend: Codable, Identifiable {
 }
 
 struct WorkoutHistory: Codable, Identifiable {
-    let id = UUID()
+    var id = UUID()
     let userId: String
     var workouts: [Workout]
-    let createdAt: Date
+    var createdAt: Date
     
     init(userId: String) {
         self.userId = userId
@@ -64,7 +64,7 @@ struct WorkoutHistory: Codable, Identifiable {
 }
 
 struct Exercise: Identifiable {
-    let id = UUID()
+    var id = UUID()
     var name: String
     var sets: Int = 3
     var reps: Int = 10
@@ -73,10 +73,10 @@ struct Exercise: Identifiable {
 
 // MARK: - Routine Models
 struct Routine: Codable, Identifiable {
-    let id = UUID()
+    var id = UUID()
     var name: String
     var exercises: [RoutineExercise]
-    let createdAt: Date
+    var createdAt: Date
     
     init(name: String) {
         self.name = name
@@ -86,7 +86,7 @@ struct Routine: Codable, Identifiable {
 }
 
 struct RoutineExercise: Codable, Identifiable {
-    let id = UUID()
+    var id = UUID()
     var name: String
     var defaultSets: Int
     
@@ -98,10 +98,10 @@ struct RoutineExercise: Codable, Identifiable {
 
 // MARK: - Workout Session Models
 struct WorkoutSession: Codable, Identifiable {
-    let id = UUID()
-    let routineName: String
+    var id = UUID()
+    var routineName: String
     var exercises: [WorkoutSessionExercise]
-    let startTime: Date
+    var startTime: Date
     var endTime: Date?
     var isCompleted: Bool = false
     
@@ -113,8 +113,8 @@ struct WorkoutSession: Codable, Identifiable {
 }
 
 struct WorkoutSessionExercise: Codable, Identifiable {
-    let id = UUID()
-    let exerciseName: String
+    var id = UUID()
+    var exerciseName: String
     var sets: [WorkoutSet]
     
     init(exerciseName: String, numberOfSets: Int) {
@@ -130,7 +130,7 @@ struct WorkoutSessionExercise: Codable, Identifiable {
 }
 
 struct WorkoutSet: Codable, Identifiable {
-    let id = UUID()
+    var id = UUID()
     let setNumber: Int
     var weight: Double = 0.0
     var reps: Int = 0

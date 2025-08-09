@@ -28,7 +28,7 @@ class FirebaseService: ObservableObject {
     // MARK: - Authentication
     
     private func setupAuthStateListener() {
-        auth.addStateDidChangeListener { [weak self] _, user in
+        _ = auth.addStateDidChangeListener { [weak self] _, user in
             DispatchQueue.main.async {
                 self?.currentUser = user
                 self?.isAuthenticated = user != nil
@@ -75,7 +75,7 @@ class FirebaseService: ObservableObject {
     
     func signInAnonymously() async throws {
         do {
-            let result = try await auth.signInAnonymously()
+            _ = try await auth.signInAnonymously()
             print("Signed in anonymously successfully")
         } catch {
             print("Error signing in anonymously: \(error)")
@@ -86,7 +86,7 @@ class FirebaseService: ObservableObject {
     func signUp(email: String, password: String) async throws {
         do {
             print("Attempting to create user with email")
-            let result = try await auth.createUser(withEmail: email, password: password)
+            _ = try await auth.createUser(withEmail: email, password: password)
             print("User signed up successfully")
             
             // Don't create a profile here - let the onboarding flow handle it
@@ -120,7 +120,7 @@ class FirebaseService: ObservableObject {
     func signIn(email: String, password: String) async throws {
         do {
             print("Attempting to sign in with email")
-            let result = try await auth.signIn(withEmail: email, password: password)
+            _ = try await auth.signIn(withEmail: email, password: password)
             print("User signed in successfully")
         } catch {
             print("Error signing in: \(error)")
@@ -395,11 +395,33 @@ class FirebaseService: ObservableObject {
     }
     
     private func dictionaryToSession(_ data: [String: Any]) throws -> WorkoutSession {
-        let decoder = JSONDecoder()
-        decoder.dateDecodingStrategy = .secondsSince1970
+        // Extract values from Firestore data, handling potential FIRDocumentReference objects
+        guard let id = data["id"] as? String,
+              let routineName = data["routineName"] as? String,
+              let startTimeTimestamp = data["startTime"] as? TimeInterval,
+              let exercisesData = data["exercises"] as? [[String: Any]] else {
+            throw FirebaseError.invalidData
+        }
         
-        let jsonData = try JSONSerialization.data(withJSONObject: data)
-        return try decoder.decode(WorkoutSession.self, from: jsonData)
+        let startTime = Date(timeIntervalSince1970: startTimeTimestamp)
+        let endTime = (data["endTime"] as? TimeInterval).map { Date(timeIntervalSince1970: $0) }
+        let isCompleted = data["isCompleted"] as? Bool ?? false
+        
+        var exercises: [WorkoutSessionExercise] = []
+        for exerciseData in exercisesData {
+            if let exercise = try? dictionaryToSessionExercise(exerciseData) {
+                exercises.append(exercise)
+            }
+        }
+        
+        var session = WorkoutSession(routineName: routineName)
+        session.id = UUID(uuidString: id) ?? UUID()
+        session.exercises = exercises
+        session.startTime = startTime
+        session.endTime = endTime
+        session.isCompleted = isCompleted
+        
+        return session
     }
     
     private func routineToDictionary(_ routine: Routine) throws -> [String: Any] {
@@ -415,11 +437,29 @@ class FirebaseService: ObservableObject {
     }
     
     private func dictionaryToRoutine(_ data: [String: Any]) throws -> Routine {
-        let decoder = JSONDecoder()
-        decoder.dateDecodingStrategy = .secondsSince1970
+        // Extract values from Firestore data, handling potential FIRDocumentReference objects
+        guard let id = data["id"] as? String,
+              let name = data["name"] as? String,
+              let exercisesData = data["exercises"] as? [[String: Any]],
+              let createdAtTimestamp = data["createdAt"] as? TimeInterval else {
+            throw FirebaseError.invalidData
+        }
         
-        let jsonData = try JSONSerialization.data(withJSONObject: data)
-        return try decoder.decode(Routine.self, from: jsonData)
+        let createdAt = Date(timeIntervalSince1970: createdAtTimestamp)
+        
+        var exercises: [RoutineExercise] = []
+        for exerciseData in exercisesData {
+            if let exercise = try? dictionaryToRoutineExercise(exerciseData) {
+                exercises.append(exercise)
+            }
+        }
+        
+        var routine = Routine(name: name)
+        routine.id = UUID(uuidString: id) ?? UUID()
+        routine.exercises = exercises
+        routine.createdAt = createdAt
+        
+        return routine
     }
     
     private func userProfileToDictionary(_ userProfile: UserProfile) throws -> [String: Any] {
@@ -435,11 +475,74 @@ class FirebaseService: ObservableObject {
     }
     
     private func dictionaryToUserProfile(_ data: [String: Any]) throws -> UserProfile {
-        let decoder = JSONDecoder()
-        decoder.dateDecodingStrategy = .secondsSince1970
+        // Extract values from Firestore data, handling potential FIRDocumentReference objects
+        guard let id = data["id"] as? String,
+              let username = data["username"] as? String,
+              let firstName = data["firstName"] as? String,
+              let lastName = data["lastName"] as? String,
+              let bio = data["bio"] as? String,
+              let createdAtTimestamp = data["createdAt"] as? TimeInterval else {
+            throw FirebaseError.invalidData
+        }
         
-        let jsonData = try JSONSerialization.data(withJSONObject: data)
-        return try decoder.decode(UserProfile.self, from: jsonData)
+        let friendIds = data["friendIds"] as? [String] ?? []
+        let createdAt = Date(timeIntervalSince1970: createdAtTimestamp)
+        
+        return UserProfile(
+            id: id,
+            username: username,
+            firstName: firstName,
+            lastName: lastName,
+            bio: bio,
+            friendIds: friendIds,
+            createdAt: createdAt
+        )
+    }
+    
+    private func dictionaryToRoutineExercise(_ data: [String: Any]) throws -> RoutineExercise {
+        guard let id = data["id"] as? String,
+              let name = data["name"] as? String,
+              let defaultSets = data["defaultSets"] as? Int else {
+            throw FirebaseError.invalidData
+        }
+        
+        var exercise = RoutineExercise(name: name, defaultSets: defaultSets)
+        exercise.id = UUID(uuidString: id) ?? UUID()
+        return exercise
+    }
+    
+    private func dictionaryToSessionExercise(_ data: [String: Any]) throws -> WorkoutSessionExercise {
+        guard let id = data["id"] as? String,
+              let exerciseName = data["exerciseName"] as? String,
+              let setsData = data["sets"] as? [[String: Any]] else {
+            throw FirebaseError.invalidData
+        }
+        
+        var sets: [WorkoutSet] = []
+        for setData in setsData {
+            if let set = try? dictionaryToWorkoutSet(setData) {
+                sets.append(set)
+            }
+        }
+        
+        var exercise = WorkoutSessionExercise(exerciseName: exerciseName, numberOfSets: 0)
+        exercise.id = UUID(uuidString: id) ?? UUID()
+        exercise.sets = sets
+        return exercise
+    }
+    
+    private func dictionaryToWorkoutSet(_ data: [String: Any]) throws -> WorkoutSet {
+        guard let id = data["id"] as? String,
+              let weight = data["weight"] as? Double,
+              let reps = data["reps"] as? Int else {
+            throw FirebaseError.invalidData
+        }
+        
+        var set = WorkoutSet(setNumber: 1)
+        set.weight = weight
+        set.reps = reps
+        set.id = UUID(uuidString: id) ?? UUID()
+        return set
     }
 }
 

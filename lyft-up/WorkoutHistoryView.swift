@@ -163,8 +163,7 @@ struct WorkoutSessionDetailView: View {
             }
         }
         
-        return
-        NavigationView {
+        return NavigationView {
             ScrollView {
                 VStack(spacing: 24) {
                     sessionHeader
