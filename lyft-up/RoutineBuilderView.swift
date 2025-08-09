@@ -94,23 +94,43 @@ struct RoutineRowView: View {
             
             Spacer()
             
-            Button(action: { showingWorkoutSession = true }) {
-                Text("Start Workout")
-                    .font(.caption)
-                    .fontWeight(.medium)
-                    .foregroundColor(.white)
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 6)
-                    .background(Color.blue)
-                    .cornerRadius(8)
+            HStack(spacing: 8) {
+                Button(action: { showingRoutineDetail = true }) {
+                    Text("Edit")
+                        .font(.caption)
+                        .fontWeight(.medium)
+                        .foregroundColor(.blue)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 6)
+                        .background(Color.blue.opacity(0.1))
+                        .cornerRadius(8)
+                }
+                
+                Button(action: { showingWorkoutSession = true }) {
+                    Text("Start Workout")
+                        .font(.caption)
+                        .fontWeight(.medium)
+                        .foregroundColor(.white)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 6)
+                        .background(Color.blue)
+                        .cornerRadius(8)
+                }
             }
         }
         .padding(.vertical, 4)
-        .sheet(isPresented: $showingRoutineDetail) {
+        .sheet(isPresented: $showingRoutineDetail, onDismiss: {
+            showingWorkoutSession = false
+        }) {
             RoutineDetailView(routine: routine, routineStorage: routineStorage)
         }
         .fullScreenCover(isPresented: $showingWorkoutSession) {
             WorkoutSessionView(routine: routine)
+        }
+        .onChange(of: showingRoutineDetail) { isShowing in
+            if isShowing {
+                showingWorkoutSession = false
+            }
         }
     }
 }
@@ -255,6 +275,104 @@ struct RoutineExerciseRow: View {
     }
 }
 
+struct EditableRoutineExerciseRow: View {
+    @Binding var exercise: RoutineExercise
+    let onDelete: () -> Void
+    @State private var isEditing = false
+    @State private var editedName = ""
+    @State private var editedSets = 3
+    @State private var showingDeleteAlert = false
+    
+    var body: some View {
+        HStack {
+            if isEditing {
+                VStack(alignment: .leading, spacing: 8) {
+                    TextField("Exercise name", text: $editedName)
+                        .textFieldStyle(RoundedBorderTextFieldStyle())
+                    
+                    HStack {
+                        Text("Sets:")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                        
+                        Stepper("\(editedSets)", value: $editedSets, in: 1...10)
+                            .scaleEffect(0.8)
+                    }
+                }
+                
+                Spacer()
+                
+                HStack(spacing: 8) {
+                    Button("Save") {
+                        saveChanges()
+                    }
+                    .font(.caption)
+                    .foregroundColor(.blue)
+                    
+                    Button("Cancel") {
+                        cancelEdit()
+                    }
+                    .font(.caption)
+                    .foregroundColor(.red)
+                }
+            } else {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(exercise.name)
+                        .font(.subheadline)
+                        .fontWeight(.medium)
+                    
+                    Text("\(exercise.defaultSets) sets")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
+                
+                Spacer()
+                
+                HStack(spacing: 8) {
+                    Button("Edit") {
+                        startEdit()
+                    }
+                    .font(.caption)
+                    .foregroundColor(.blue)
+                    
+                    Button("Delete") {
+                        showingDeleteAlert = true
+                    }
+                    .font(.caption)
+                    .foregroundColor(.red)
+                }
+            }
+        }
+        .padding()
+        .background(Color(.systemGray6))
+        .cornerRadius(8)
+        .alert("Delete Exercise", isPresented: $showingDeleteAlert) {
+            Button("Cancel", role: .cancel) { }
+            Button("Delete", role: .destructive) {
+                onDelete()
+            }
+        } message: {
+            Text("Are you sure you want to delete '\(exercise.name)'?")
+        }
+    }
+    
+    private func startEdit() {
+        editedName = exercise.name
+        editedSets = exercise.defaultSets
+        isEditing = true
+    }
+    
+    private func cancelEdit() {
+        isEditing = false
+    }
+    
+    private func saveChanges() {
+        exercise.name = editedName
+        exercise.defaultSets = editedSets
+        isEditing = false
+    }
+}
+
 struct AddExerciseView: View {
     @Environment(\.dismiss) private var dismiss
     let onAdd: (RoutineExercise) -> Void
@@ -312,76 +430,180 @@ struct RoutineDetailView: View {
     let routine: Routine
     let routineStorage: RoutineStorage
     @Environment(\.dismiss) private var dismiss
-    @State private var showingWorkoutSession = false
+    @State private var isEditing = false
+    @State private var editedRoutineName = ""
+    @State private var editedExercises: [RoutineExercise] = []
+    @State private var showingAddExercise = false
     
     var body: some View {
         NavigationView {
             VStack(spacing: 20) {
-                // Routine Info
-                VStack(spacing: 8) {
-                    Text(routine.name)
-                        .font(.title2)
-                        .fontWeight(.bold)
-                    
-                    Text("\(routine.exercises.count) exercises")
-                        .font(.subheadline)
-                        .foregroundColor(.secondary)
+                if isEditing {
+                    editModeView
+                } else {
+                    viewModeView
                 }
-                .padding()
-                
-                // Exercises List
-                ScrollView {
-                    LazyVStack(spacing: 12) {
-                        ForEach(routine.exercises) { exercise in
-                            VStack(alignment: .leading, spacing: 8) {
-                                Text(exercise.name)
-                                    .font(.headline)
-                                
-                                Text("\(exercise.defaultSets) sets")
-                                    .font(.subheadline)
-                                    .foregroundColor(.secondary)
-                            }
-                            .padding()
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                            .background(Color(.systemGray6))
-                            .cornerRadius(8)
-                        }
-                    }
-                    .padding(.horizontal, 20)
-                }
-                
-                Spacer()
-                
-                // Start Workout Button
-                Button(action: { showingWorkoutSession = true }) {
-                    HStack {
-                        Image(systemName: "play.circle.fill")
-                        Text("Start Workout")
-                    }
-                    .font(.headline)
-                    .fontWeight(.semibold)
-                    .foregroundColor(.white)
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 16)
-                    .background(Color.blue)
-                    .cornerRadius(12)
-                }
-                .padding(.horizontal, 20)
-                .padding(.bottom, 20)
             }
             .navigationTitle("Routine Details")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    if isEditing {
+                        Button("Cancel") {
+                            cancelEdit()
+                        }
+                    } else {
+                        Button("Done") {
+                            dismiss()
+                        }
+                    }
+                }
+                
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Done") {
-                        dismiss()
+                    if isEditing {
+                        Button("Save") {
+                            saveChanges()
+                        }
+                        .disabled(editedRoutineName.isEmpty || editedExercises.isEmpty)
+                    } else {
+                        Button("Edit") {
+                            startEdit()
+                        }
                     }
                 }
             }
         }
-        .fullScreenCover(isPresented: $showingWorkoutSession) {
-            WorkoutSessionView(routine: routine)
+        .sheet(isPresented: $showingAddExercise) {
+            AddExerciseView { exercise in
+                editedExercises.append(exercise)
+            }
         }
+    }
+    
+    private var viewModeView: some View {
+        VStack(spacing: 20) {
+            // Routine Info
+            VStack(spacing: 8) {
+                Text(routine.name)
+                    .font(.title2)
+                    .fontWeight(.bold)
+                
+                Text("\(routine.exercises.count) exercises")
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
+            }
+            .padding()
+            
+            // Exercises List
+            ScrollView {
+                LazyVStack(spacing: 12) {
+                    ForEach(routine.exercises) { exercise in
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text(exercise.name)
+                                .font(.headline)
+                            
+                            Text("\(exercise.defaultSets) sets")
+                                .font(.subheadline)
+                                .foregroundColor(.secondary)
+                        }
+                        .padding()
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .background(Color(.systemGray6))
+                        .cornerRadius(8)
+                    }
+                }
+                .padding(.horizontal, 20)
+            }
+            
+            Spacer()
+        }
+    }
+    
+    private var editModeView: some View {
+        VStack(spacing: 0) {
+            // Routine Name Input
+            VStack(alignment: .leading, spacing: 8) {
+                Text("Routine Name")
+                    .font(.headline)
+                    .padding(.horizontal, 20)
+                
+                TextField("Enter routine name", text: $editedRoutineName)
+                    .textFieldStyle(RoundedBorderTextFieldStyle())
+                    .padding(.horizontal, 20)
+            }
+            .padding(.top, 20)
+            
+            // Exercises List
+            VStack(alignment: .leading, spacing: 16) {
+                HStack {
+                    Text("Exercises")
+                        .font(.headline)
+                    
+                    Spacer()
+                    
+                    Button(action: { showingAddExercise = true }) {
+                        Image(systemName: "plus.circle.fill")
+                            .foregroundColor(.blue)
+                            .font(.title2)
+                    }
+                }
+                .padding(.horizontal, 20)
+                .padding(.top, 20)
+                
+                if editedExercises.isEmpty {
+                    VStack(spacing: 12) {
+                        Image(systemName: "dumbbell")
+                            .font(.system(size: 40))
+                            .foregroundColor(.gray.opacity(0.5))
+                        Text("No exercises added")
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 40)
+                } else {
+                    ScrollView {
+                        LazyVStack(spacing: 12) {
+                            ForEach(editedExercises.indices, id: \.self) { index in
+                                EditableRoutineExerciseRow(
+                                    exercise: $editedExercises[index],
+                                    onDelete: {
+                                        editedExercises.remove(at: index)
+                                    }
+                                )
+                            }
+                        }
+                        .padding(.horizontal, 20)
+                    }
+                }
+            }
+            
+            Spacer()
+        }
+    }
+    
+    private func startEdit() {
+        editedRoutineName = routine.name
+        editedExercises = routine.exercises
+        isEditing = true
+    }
+    
+    private func cancelEdit() {
+        isEditing = false
+        editedRoutineName = ""
+        editedExercises = []
+    }
+    
+    private func saveChanges() {
+        var updatedRoutine = routine
+        updatedRoutine.name = editedRoutineName
+        updatedRoutine.exercises = editedExercises
+        routineStorage.saveRoutine(updatedRoutine)
+        isEditing = false
+    }
+    
+    private func deleteExercises(offsets: IndexSet) {
+        editedExercises.remove(atOffsets: offsets)
     }
 }
 
