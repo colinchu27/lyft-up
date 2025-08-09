@@ -47,17 +47,6 @@ struct ProfileView: View {
                         
                         VStack(spacing: 12) {
                             HStack {
-                                Image(systemName: "dumbbell")
-                                    .foregroundColor(.blue)
-                                    .frame(width: 24)
-                                Text("Workout Streak")
-                                Spacer()
-                                Text("0 days")
-                                    .foregroundColor(.secondary)
-                            }
-                            .padding(.horizontal, 20)
-                            
-                            HStack {
                                 Image(systemName: "flame")
                                     .foregroundColor(.orange)
                                     .frame(width: 24)
