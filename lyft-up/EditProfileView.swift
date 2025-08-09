@@ -15,6 +15,8 @@ struct EditProfileView: View {
     @State private var lastName: String = ""
     @State private var username: String = ""
     @State private var bio: String = ""
+    @State private var fitnessGoal: String = ""
+    @State private var isGoalPublic: Bool = false
     @State private var isLoading = false
     @State private var showingError = false
     @State private var errorMessage = ""
@@ -31,6 +33,13 @@ struct EditProfileView: View {
                 Section("Bio") {
                     TextField("Tell us about yourself...", text: $bio, axis: .vertical)
                         .lineLimit(3...6)
+                }
+                
+                Section("Fitness Goal") {
+                    TextField("What's your fitness goal?", text: $fitnessGoal, axis: .vertical)
+                        .lineLimit(2...4)
+                    
+                    Toggle("Make goal public", isOn: $isGoalPublic)
                 }
                 
                 Section {
@@ -79,6 +88,8 @@ struct EditProfileView: View {
             lastName = profile.lastName
             username = profile.username
             bio = profile.bio
+            fitnessGoal = profile.fitnessGoal
+            isGoalPublic = profile.isGoalPublic
         }
     }
     
@@ -99,7 +110,9 @@ struct EditProfileView: View {
             lastName: lastName.trimmingCharacters(in: .whitespacesAndNewlines),
             bio: bio.trimmingCharacters(in: .whitespacesAndNewlines),
             friendIds: currentProfile.friendIds,
-            createdAt: currentProfile.createdAt
+            createdAt: currentProfile.createdAt,
+            fitnessGoal: fitnessGoal.trimmingCharacters(in: .whitespacesAndNewlines),
+            isGoalPublic: isGoalPublic
         )
         
         Task {

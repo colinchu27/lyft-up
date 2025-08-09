@@ -25,8 +25,10 @@ struct UserProfile: Codable, Identifiable {
     let bio: String
     var friendIds: [String]
     var createdAt: Date
+    var fitnessGoal: String
+    var isGoalPublic: Bool
     
-    init(id: String, username: String, firstName: String = "", lastName: String = "", bio: String = "", friendIds: [String] = [], createdAt: Date = Date()) {
+    init(id: String, username: String, firstName: String = "", lastName: String = "", bio: String = "", friendIds: [String] = [], createdAt: Date = Date(), fitnessGoal: String = "", isGoalPublic: Bool = false) {
         self.id = id
         self.username = username
         self.firstName = firstName
@@ -34,6 +36,8 @@ struct UserProfile: Codable, Identifiable {
         self.bio = bio
         self.friendIds = friendIds
         self.createdAt = createdAt
+        self.fitnessGoal = fitnessGoal
+        self.isGoalPublic = isGoalPublic
     }
 }
 

@@ -486,6 +486,8 @@ class FirebaseService: ObservableObject {
         }
         
         let friendIds = data["friendIds"] as? [String] ?? []
+        let fitnessGoal = data["fitnessGoal"] as? String ?? ""
+        let isGoalPublic = data["isGoalPublic"] as? Bool ?? false
         let createdAt = Date(timeIntervalSince1970: createdAtTimestamp)
         
         return UserProfile(
@@ -495,7 +497,9 @@ class FirebaseService: ObservableObject {
             lastName: lastName,
             bio: bio,
             friendIds: friendIds,
-            createdAt: createdAt
+            createdAt: createdAt,
+            fitnessGoal: fitnessGoal,
+            isGoalPublic: isGoalPublic
         )
     }
     

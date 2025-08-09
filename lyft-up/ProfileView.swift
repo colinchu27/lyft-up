@@ -58,16 +58,51 @@ struct ProfileView: View {
                             }
                             .padding(.horizontal, 20)
                             
-                            HStack {
-                                Image(systemName: "target")
-                                    .foregroundColor(.green)
-                                    .frame(width: 24)
-                                Text("Goals Achieved")
-                                Spacer()
-                                Text("0")
-                                    .foregroundColor(.secondary)
+                            // Fitness Goal Section
+                            VStack(alignment: .leading, spacing: 12) {
+                                HStack {
+                                    Image(systemName: "target")
+                                        .foregroundColor(.green)
+                                        .frame(width: 24)
+                                    Text("Fitness Goal")
+                                    Spacer()
+                                    Button(action: { showingEditProfile = true }) {
+                                        Image(systemName: "pencil.circle")
+                                            .foregroundColor(.blue)
+                                            .font(.caption)
+                                    }
+                                }
+                                .padding(.horizontal, 20)
+                                
+                                if let profile = firebaseService.userProfile, !profile.fitnessGoal.isEmpty {
+                                    VStack(alignment: .leading, spacing: 4) {
+                                        Text(profile.fitnessGoal)
+                                            .font(.subheadline)
+                                            .foregroundColor(.primary)
+                                            .multilineTextAlignment(.leading)
+                                            .padding(.horizontal, 20)
+                                            .padding(.vertical, 12)
+                                            .frame(maxWidth: .infinity, alignment: .leading)
+                                            .background(Color(.systemGray6))
+                                            .cornerRadius(8)
+                                            .padding(.horizontal, 20)
+                                    }
+                                } else {
+                                    VStack(alignment: .leading, spacing: 4) {
+                                        Text("Set your fitness goal")
+                                            .font(.subheadline)
+                                            .foregroundColor(.secondary)
+                                            .padding(.horizontal, 20)
+                                            .padding(.vertical, 12)
+                                            .frame(maxWidth: .infinity, alignment: .leading)
+                                            .background(Color(.systemGray6))
+                                            .cornerRadius(8)
+                                            .padding(.horizontal, 20)
+                                    }
+                                }
                             }
-                            .padding(.horizontal, 20)
+                            
+
                         }
                         .padding(.vertical, 16)
                         .cornerRadius(12)
