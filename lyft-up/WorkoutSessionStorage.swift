@@ -15,6 +15,7 @@ class WorkoutStatsStorage: ObservableObject {
     @Published var stats: WorkoutStats
     private let userDefaults = UserDefaults.standard
     private let statsKey = "workoutStats"
+    private let firebaseService = FirebaseService.shared
     
     init() {
         self.stats = WorkoutStats()
@@ -25,6 +26,13 @@ class WorkoutStatsStorage: ObservableObject {
         stats.totalWorkouts += 1
         stats.lastWorkoutDate = Date()
         saveStats()
+        syncToFirebase()
+    }
+    
+    func addWeightLifted(_ weight: Double) {
+        stats.totalWeightLifted += weight
+        saveStats()
+        syncToFirebase()
     }
     
     func getTotalWorkouts() -> Int {
@@ -41,6 +49,36 @@ class WorkoutStatsStorage: ObservableObject {
         if let data = userDefaults.data(forKey: statsKey),
            let decoded = try? JSONDecoder().decode(WorkoutStats.self, from: data) {
             stats = decoded
+        }
+    }
+    
+    private func syncToFirebase() {
+        Task {
+            do {
+                if var userProfile = firebaseService.userProfile {
+                    userProfile.totalWorkouts = stats.totalWorkouts
+                    userProfile.totalWeightLifted = stats.totalWeightLifted
+                    userProfile.lastWorkoutDate = stats.lastWorkoutDate
+                    
+                    try await firebaseService.saveUserProfile(userProfile)
+                    
+                    await MainActor.run {
+                        firebaseService.userProfile = userProfile
+                    }
+                }
+            } catch {
+                print("Error syncing workout stats to Firebase: \(error)")
+            }
+        }
+    }
+    
+    // Load stats from Firebase user profile
+    func loadFromFirebase() {
+        if let userProfile = firebaseService.userProfile {
+            stats.totalWorkouts = userProfile.totalWorkouts
+            stats.totalWeightLifted = userProfile.totalWeightLifted
+            stats.lastWorkoutDate = userProfile.lastWorkoutDate
+            saveStats()
         }
     }
 }

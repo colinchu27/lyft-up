@@ -490,6 +490,11 @@ class FirebaseService: ObservableObject {
         let isGoalPublic = data["isGoalPublic"] as? Bool ?? false
         let createdAt = Date(timeIntervalSince1970: createdAtTimestamp)
         
+        // Parse workout stats with defaults
+        let totalWorkouts = data["totalWorkouts"] as? Int ?? 0
+        let totalWeightLifted = data["totalWeightLifted"] as? Double ?? 0.0
+        let lastWorkoutDate = (data["lastWorkoutDate"] as? TimeInterval).map { Date(timeIntervalSince1970: $0) }
+        
         return UserProfile(
             id: id,
             username: username,
@@ -499,7 +504,10 @@ class FirebaseService: ObservableObject {
             friendIds: friendIds,
             createdAt: createdAt,
             fitnessGoal: fitnessGoal,
-            isGoalPublic: isGoalPublic
+            isGoalPublic: isGoalPublic,
+            totalWorkouts: totalWorkouts,
+            totalWeightLifted: totalWeightLifted,
+            lastWorkoutDate: lastWorkoutDate
         )
     }
     

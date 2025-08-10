@@ -215,8 +215,16 @@ struct WorkoutSessionView: View {
         // Save the session
         sessionStorage.saveSession(session)
         
-        // Increment total workouts counter
+        // Calculate total weight lifted for this session
+        let sessionTotalWeight = session.exercises.reduce(0.0) { total, exercise in
+            total + exercise.sets.reduce(0.0) { setTotal, set in
+                setTotal + (set.weight * Double(set.reps))
+            }
+        }
+        
+        // Increment total workouts counter and add weight lifted
         statsStorage.incrementTotalWorkouts()
+        statsStorage.addWeightLifted(sessionTotalWeight)
         
         // Store completed session and show summary
         completedSession = session

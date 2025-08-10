@@ -58,6 +58,17 @@ struct ProfileView: View {
                             }
                             .padding(.horizontal, 20)
                             
+                            HStack {
+                                Image(systemName: "dumbbell.fill")
+                                    .foregroundColor(.blue)
+                                    .frame(width: 24)
+                                Text("Total Weight Lifted")
+                                Spacer()
+                                Text("\(Int(statsStorage.stats.totalWeightLifted)) lbs")
+                                    .foregroundColor(.secondary)
+                            }
+                            .padding(.horizontal, 20)
+                            
                             // Fitness Goal Section
                             VStack(alignment: .leading, spacing: 12) {
                                 HStack {
@@ -217,6 +228,9 @@ struct ProfileView: View {
                     Task {
                         await firebaseService.refreshUserProfile()
                     }
+                } else {
+                    // Load workout stats from Firebase user profile
+                    statsStorage.loadFromFirebase()
                 }
             }
         }

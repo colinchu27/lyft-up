@@ -27,8 +27,11 @@ struct UserProfile: Codable, Identifiable {
     var createdAt: Date
     var fitnessGoal: String
     var isGoalPublic: Bool
+    var totalWorkouts: Int
+    var totalWeightLifted: Double
+    var lastWorkoutDate: Date?
     
-    init(id: String, username: String, firstName: String = "", lastName: String = "", bio: String = "", friendIds: [String] = [], createdAt: Date = Date(), fitnessGoal: String = "", isGoalPublic: Bool = false) {
+    init(id: String, username: String, firstName: String = "", lastName: String = "", bio: String = "", friendIds: [String] = [], createdAt: Date = Date(), fitnessGoal: String = "", isGoalPublic: Bool = false, totalWorkouts: Int = 0, totalWeightLifted: Double = 0.0, lastWorkoutDate: Date? = nil) {
         self.id = id
         self.username = username
         self.firstName = firstName
@@ -38,6 +41,9 @@ struct UserProfile: Codable, Identifiable {
         self.createdAt = createdAt
         self.fitnessGoal = fitnessGoal
         self.isGoalPublic = isGoalPublic
+        self.totalWorkouts = totalWorkouts
+        self.totalWeightLifted = totalWeightLifted
+        self.lastWorkoutDate = lastWorkoutDate
     }
 }
 
@@ -149,11 +155,11 @@ struct WorkoutSet: Codable, Identifiable {
 struct WorkoutStats: Codable {
     var totalWorkouts: Int
     var lastWorkoutDate: Date?
-    var goalsAchieved: Int
+    var totalWeightLifted: Double
     
     init() {
         self.totalWorkouts = 0
         self.lastWorkoutDate = nil
-        self.goalsAchieved = 0
+        self.totalWeightLifted = 0.0
     }
 }
