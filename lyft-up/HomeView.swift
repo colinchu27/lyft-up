@@ -9,6 +9,7 @@ import SwiftUI
 
 struct HomeView: View {
     @StateObject private var firebaseService = FirebaseService.shared
+    @Binding var selectedTab: Int
     
     var body: some View {
         NavigationView {
@@ -95,7 +96,8 @@ struct HomeView: View {
                                 
                                 // View Routines Button
                                 Button(action: {
-                                    // Navigate to routines
+                                    // Navigate to routines tab (index 1)
+                                    selectedTab = 1
                                 }) {
                                     VStack(spacing: 12) {
                                         ZStack {
@@ -155,5 +157,5 @@ struct HomeView: View {
 }
 
 #Preview {
-    HomeView()
+    HomeView(selectedTab: .constant(0))
 }

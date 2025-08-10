@@ -12,6 +12,7 @@ struct ContentView: View {
     @StateObject private var sessionStorage = WorkoutSessionStorage()
     @StateObject private var firebaseService = FirebaseService.shared
     @State private var isLoading = true
+    @State private var selectedTab = 0
 
     var body: some View {
         Group {
@@ -64,12 +65,13 @@ struct ContentView: View {
     }
     
     private var mainTabView: some View {
-        TabView {
-            HomeView()
+        TabView(selection: $selectedTab) {
+            HomeView(selectedTab: $selectedTab)
                 .tabItem {
                     Image(systemName: "house.fill")
                     Text("Home")
                 }
+                .tag(0)
 
             RoutineBuilderView()
                 .environmentObject(workoutStorage)
@@ -78,12 +80,14 @@ struct ContentView: View {
                     Image(systemName: "list.bullet.clipboard")
                     Text("Routines")
                 }
+                .tag(1)
 
             ProfileView()
                 .tabItem {
                     Image(systemName: "person.fill")
                     Text("Profile")
                 }
+                .tag(2)
         }
         .environmentObject(firebaseService)
         .accentColor(.lyftRed) // Set tab bar accent color
