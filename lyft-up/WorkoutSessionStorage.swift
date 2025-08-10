@@ -88,6 +88,7 @@ class WorkoutSessionStorage: ObservableObject {
     @Published var sessions: [WorkoutSession] = []
     private let userDefaults = UserDefaults.standard
     private let sessionsKey = "savedWorkoutSessions"
+    private let firebaseService = FirebaseService.shared
     
     init() {
         loadSessions()
@@ -99,12 +100,79 @@ class WorkoutSessionStorage: ObservableObject {
         } else {
             sessions.append(session)
         }
+        
+        // Save to UserDefaults for offline access
         saveToUserDefaults()
+        
+        // Save to Firebase if user is authenticated
+        if firebaseService.isAuthenticated {
+            Task {
+                do {
+                    try await firebaseService.saveWorkoutSession(session)
+                    print("Workout session saved to Firebase successfully")
+                } catch {
+                    print("Error saving workout session to Firebase: \(error)")
+                }
+            }
+        }
     }
     
     func deleteSession(_ session: WorkoutSession) {
         sessions.removeAll { $0.id == session.id }
         saveToUserDefaults()
+        
+        // Delete from Firebase if user is authenticated
+        if firebaseService.isAuthenticated {
+            Task {
+                do {
+                    try await firebaseService.deleteWorkoutSession(session)
+                    print("Workout session deleted from Firebase successfully")
+                } catch {
+                    print("Error deleting workout session from Firebase: \(error)")
+                }
+            }
+        }
+    }
+    
+    func loadSessionsFromFirebase() {
+        guard firebaseService.isAuthenticated else { return }
+        
+        Task {
+            do {
+                let firebaseSessions = try await firebaseService.loadWorkoutSessions()
+                await MainActor.run {
+                    self.sessions = firebaseSessions
+                    // Also save to UserDefaults for offline access
+                    self.saveToUserDefaults()
+                }
+                print("Workout sessions loaded from Firebase successfully")
+            } catch {
+                print("Error loading workout sessions from Firebase: \(error)")
+                // Fall back to UserDefaults if Firebase fails
+                await MainActor.run {
+                    self.loadSessions()
+                }
+            }
+        }
+    }
+    
+    func syncLocalSessionsToFirebase() {
+        guard firebaseService.isAuthenticated else { return }
+        
+        // Load local sessions first
+        loadSessions()
+        
+        // Upload each local session to Firebase
+        for session in sessions {
+            Task {
+                do {
+                    try await firebaseService.saveWorkoutSession(session)
+                    print("Synced local workout session '\(session.routineName)' to Firebase")
+                } catch {
+                    print("Error syncing workout session '\(session.routineName)' to Firebase: \(error)")
+                }
+            }
+        }
     }
     
     func getLastWorkoutData(for exerciseName: String) -> (weight: Double, reps: Int)? {

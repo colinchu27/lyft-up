@@ -158,6 +158,48 @@ class FirebaseService: ObservableObject {
         }
     }
     
+    // MARK: - Username Management
+    
+    func isUsernameAvailable(_ username: String) async throws -> Bool {
+        do {
+            let document = try await db.collection("usernames").document(username).getDocument()
+            return !document.exists
+        } catch {
+            print("Error checking username availability: \(error)")
+            throw error
+        }
+    }
+    
+    func getUserByUsername(_ username: String) async throws -> UserProfile? {
+        do {
+            let document = try await db.collection("usernames").document(username).getDocument()
+            guard document.exists,
+                  let data = document.data(),
+                  let userId = data["userId"] as? String else {
+                return nil
+            }
+            
+            return try await loadUserProfileById(userId)
+        } catch {
+            print("Error getting user by username: \(error)")
+            throw error
+        }
+    }
+    
+    private func loadUserProfileById(_ userId: String) async throws -> UserProfile? {
+        do {
+            let document = try await db.collection("users").document(userId).getDocument()
+            guard let data = document.data() else { 
+                return nil 
+            }
+            
+            return try dictionaryToUserProfile(data)
+        } catch {
+            print("Error loading user profile by ID: \(error)")
+            throw error
+        }
+    }
+    
     // MARK: - Workout Sessions
     
     func saveWorkoutSession(_ session: WorkoutSession) async throws {
@@ -198,6 +240,24 @@ class FirebaseService: ObservableObject {
             return sessions
         } catch {
             print("Error loading workout sessions: \(error)")
+            throw error
+        }
+    }
+    
+    func deleteWorkoutSession(_ session: WorkoutSession) async throws {
+        guard let userId = currentUser?.uid else {
+            throw FirebaseError.userNotAuthenticated
+        }
+        
+        do {
+            try await db.collection("users").document(userId)
+                .collection("workoutSessions")
+                .document(session.id.uuidString)
+                .delete()
+            
+            print("Workout session deleted successfully")
+        } catch {
+            print("Error deleting workout session: \(error)")
             throw error
         }
     }
@@ -275,6 +335,13 @@ class FirebaseService: ObservableObject {
             let userData = try userProfileToDictionary(userProfile)
             try await db.collection("users").document(userId)
                 .setData(userData)
+            
+            // Also create a username index for easy lookup
+            try await db.collection("usernames").document(userProfile.username)
+                .setData([
+                    "userId": userId,
+                    "createdAt": userProfile.createdAt.timeIntervalSince1970
+                ])
             
             print("User profile saved successfully")
         } catch {

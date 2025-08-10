@@ -28,6 +28,11 @@ struct WorkoutHistoryView: View {
                     WorkoutSessionDetailView(session: session)
                 }
             }
+            .onAppear {
+                sessionStorage.loadSessionsFromFirebase()
+                // Also sync any local sessions to Firebase
+                sessionStorage.syncLocalSessionsToFirebase()
+            }
         }
     }
     

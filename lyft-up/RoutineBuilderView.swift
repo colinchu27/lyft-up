@@ -64,6 +64,11 @@ struct RoutineBuilderView: View {
             .sheet(isPresented: $showingCreateRoutine) {
                 CreateRoutineView(routineStorage: routineStorage)
             }
+            .onAppear {
+                routineStorage.loadRoutinesFromFirebase()
+                // Also sync any local routines to Firebase
+                routineStorage.syncLocalRoutinesToFirebase()
+            }
         }
     }
     
