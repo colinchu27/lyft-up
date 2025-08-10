@@ -28,10 +28,6 @@ struct ProfileView: View {
                             .font(.title2)
                             .fontWeight(.semibold)
                         
-                        Text(userEmail)
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                        
                         Text(userBio)
                             .font(.subheadline)
                             .foregroundColor(.secondary)
@@ -247,10 +243,6 @@ struct ProfileView: View {
             }
         }
         return "User"
-    }
-    
-    private var userEmail: String {
-        return firebaseService.currentUser?.email ?? "No email"
     }
     
     private var userBio: String {
