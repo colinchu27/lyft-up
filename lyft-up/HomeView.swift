@@ -12,40 +12,125 @@ struct HomeView: View {
     
     var body: some View {
         NavigationView {
-            VStack(spacing: 20) {
-                Spacer()
+            ZStack {
+                // Background
+                Color.white.ignoresSafeArea()
                 
-                Image(systemName: "house.fill")
-                    .imageScale(.large)
-                    .foregroundStyle(.tint)
-                    .font(.system(size: 60))
-                
-                Text("Home")
-                    .font(.largeTitle)
-                    .fontWeight(.bold)
-                
-                Text("Welcome to Lyft Up!")
-                    .font(.title2)
-                    .foregroundColor(.secondary)
-                
-                // User welcome message
-                if firebaseService.userProfile != nil {
-                    VStack(spacing: 8) {
-                        Text("Welcome back,")
-                            .font(.headline)
-                            .foregroundColor(.secondary)
+                VStack(spacing: 32) {
+                    Spacer()
+                    
+                    // Main Content
+                    VStack(spacing: 24) {
+                        // Logo and Welcome
+                        VStack(spacing: 20) {
+                            ZStack {
+                                Circle()
+                                    .fill(Color.lyftRed.opacity(0.1))
+                                    .frame(width: 120, height: 120)
+                                
+                                Image(systemName: "house.fill")
+                                    .font(.system(size: 50))
+                                    .foregroundColor(.lyftRed)
+                            }
+                            
+                            Text("Home")
+                                .font(.system(size: 28, weight: .bold, design: .rounded))
+                                .foregroundColor(.lyftText)
+                        }
                         
-                        Text(userDisplayName)
-                            .font(.title)
-                            .fontWeight(.semibold)
-                            .foregroundColor(.primary)
+                        // Welcome Message
+                        VStack(spacing: 16) {
+                            Text("Welcome to Lyft Up!")
+                                .font(.system(size: 24, weight: .semibold))
+                                .foregroundColor(.lyftText)
+                            
+                            // User welcome message
+                            if firebaseService.userProfile != nil {
+                                VStack(spacing: 8) {
+                                    Text("Welcome back,")
+                                        .font(.system(size: 16, weight: .medium))
+                                        .foregroundColor(.lyftTextSecondary)
+                                    
+                                    Text(userDisplayName)
+                                        .font(.system(size: 22, weight: .bold))
+                                        .foregroundColor(.lyftRed)
+                                }
+                                .padding(.top, 8)
+                            }
+                        }
+                        
+                        // Quick Actions Card
+                        VStack(spacing: 20) {
+                            Text("Quick Actions")
+                                .font(.system(size: 18, weight: .semibold))
+                                .foregroundColor(.lyftText)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                            
+                            HStack(spacing: 16) {
+                                // Start Workout Button
+                                Button(action: {
+                                    // Navigate to workout session
+                                }) {
+                                    VStack(spacing: 12) {
+                                        ZStack {
+                                            Circle()
+                                                .fill(Color.lyftRed.opacity(0.1))
+                                                .frame(width: 50, height: 50)
+                                            
+                                            Image(systemName: "play.fill")
+                                                .font(.system(size: 20))
+                                                .foregroundColor(.lyftRed)
+                                        }
+                                        
+                                        Text("Start Workout")
+                                            .font(.system(size: 12, weight: .medium))
+                                            .foregroundColor(.lyftText)
+                                    }
+                                    .frame(maxWidth: .infinity)
+                                    .padding(.vertical, 20)
+                                    .background(Color.lyftGray)
+                                    .cornerRadius(12)
+                                }
+                                .buttonStyle(PlainButtonStyle())
+                                
+                                // View Routines Button
+                                Button(action: {
+                                    // Navigate to routines
+                                }) {
+                                    VStack(spacing: 12) {
+                                        ZStack {
+                                            Circle()
+                                                .fill(Color.lyftRed.opacity(0.1))
+                                                .frame(width: 50, height: 50)
+                                            
+                                            Image(systemName: "list.bullet.clipboard")
+                                                .font(.system(size: 20))
+                                                .foregroundColor(.lyftRed)
+                                        }
+                                        
+                                        Text("View Routines")
+                                            .font(.system(size: 12, weight: .medium))
+                                            .foregroundColor(.lyftText)
+                                    }
+                                    .frame(maxWidth: .infinity)
+                                    .padding(.vertical, 20)
+                                    .background(Color.lyftGray)
+                                    .cornerRadius(12)
+                                }
+                                .buttonStyle(PlainButtonStyle())
+                            }
+                        }
+                        .padding(.horizontal, 24)
+                        .padding(.vertical, 24)
+                        .background(Color.white)
+                        .cornerRadius(16)
+                        .shadow(color: Color.black.opacity(0.05), radius: 10, x: 0, y: 2)
+                        .padding(.horizontal, 24)
                     }
-                    .padding(.top, 20)
+                    
+                    Spacer()
                 }
-                
-                Spacer()
             }
-            .padding()
             .onAppear {
                 // Refresh user profile when view appears
                 Task {

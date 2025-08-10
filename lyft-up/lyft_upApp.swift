@@ -11,6 +11,55 @@ import Firebase
 import FirebaseAuth
 import FirebaseFirestore
 
+// Custom Color Extension for the app's color scheme
+extension Color {
+    static let lyftRed = Color(red: 0.91, green: 0.12, blue: 0.12)
+    static let lyftRedLight = Color(red: 0.95, green: 0.15, blue: 0.15)
+    static let lyftRedDark = Color(red: 0.75, green: 0.10, blue: 0.10)
+    static let lyftGray = Color(red: 0.96, green: 0.96, blue: 0.96)
+    static let lyftGrayDark = Color(red: 0.90, green: 0.90, blue: 0.90)
+    static let lyftText = Color(red: 0.20, green: 0.20, blue: 0.20)
+    static let lyftTextSecondary = Color(red: 0.60, green: 0.60, blue: 0.60)
+}
+
+// Custom Button Style
+struct LyftButtonStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .foregroundColor(.white)
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 16)
+            .background(Color.lyftRed)
+            .cornerRadius(12)
+            .scaleEffect(configuration.isPressed ? 0.95 : 1.0)
+            .animation(.easeInOut(duration: 0.1), value: configuration.isPressed)
+    }
+}
+
+// Custom Text Field Style
+struct LyftTextFieldStyle: TextFieldStyle {
+    func _body(configuration: TextField<Self._Label>) -> some View {
+        configuration
+            .padding(.horizontal, 16)
+            .padding(.vertical, 12)
+            .background(Color.lyftGray)
+            .cornerRadius(8)
+            .overlay(
+                RoundedRectangle(cornerRadius: 8)
+                    .stroke(Color.lyftRed.opacity(0.3), lineWidth: 1)
+            )
+    }
+}
+
+// Username Status Enum
+enum UsernameStatus {
+    case none
+    case checking
+    case available
+    case taken
+    case invalid
+}
+
 class AppDelegate: NSObject, UIApplicationDelegate {
     func application(_ application: UIApplication,
                      didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey : Any]? = nil) -> Bool {
@@ -68,6 +117,7 @@ struct lyft_upApp: App {
                         print("Firebase configuration failed")
                     }
                 }
+                .preferredColorScheme(.light) // Force light mode for consistent white background
         }
     }
 }

@@ -13,51 +13,75 @@ struct RoutineBuilderView: View {
     
     var body: some View {
         NavigationView {
-            VStack {
-                if routineStorage.routines.isEmpty {
-                    // Empty State
-                    VStack(spacing: 20) {
-                        Image(systemName: "list.bullet.clipboard")
-                            .font(.system(size: 60))
-                            .foregroundColor(.blue)
-                        
-                        Text("No Routines Yet")
-                            .font(.title2)
-                            .fontWeight(.semibold)
-                        
-                        Text("Create your first workout routine to get started")
-                            .font(.subheadline)
-                            .foregroundColor(.secondary)
-                            .multilineTextAlignment(.center)
-                        
-                        Button(action: { showingCreateRoutine = true }) {
-                            HStack {
-                                Image(systemName: "plus.circle.fill")
-                                Text("Create Routine")
+            ZStack {
+                // Background
+                Color.lyftGray.ignoresSafeArea()
+                
+                VStack {
+                    if routineStorage.routines.isEmpty {
+                        // Empty State
+                        VStack(spacing: 32) {
+                            Spacer()
+                            
+                            VStack(spacing: 24) {
+                                ZStack {
+                                    Circle()
+                                        .fill(Color.lyftRed.opacity(0.1))
+                                        .frame(width: 120, height: 120)
+                                    
+                                    Image(systemName: "list.bullet.clipboard")
+                                        .font(.system(size: 50))
+                                        .foregroundColor(.lyftRed)
+                                }
+                                
+                                VStack(spacing: 16) {
+                                    Text("No Routines Yet")
+                                        .font(.system(size: 24, weight: .bold))
+                                        .foregroundColor(.lyftText)
+                                    
+                                    Text("Create your first workout routine to get started")
+                                        .font(.system(size: 16, weight: .medium))
+                                        .foregroundColor(.lyftTextSecondary)
+                                        .multilineTextAlignment(.center)
+                                }
                             }
-                            .font(.headline)
-                            .foregroundColor(.white)
-                            .padding()
-                            .background(Color.blue)
-                            .cornerRadius(10)
+                            
+                            Button(action: { showingCreateRoutine = true }) {
+                                HStack(spacing: 12) {
+                                    Image(systemName: "plus.circle.fill")
+                                        .font(.system(size: 18, weight: .medium))
+                                    Text("Create Routine")
+                                        .font(.system(size: 16, weight: .semibold))
+                                }
+                            }
+                            .buttonStyle(LyftButtonStyle())
+                            .padding(.horizontal, 40)
+                            
+                            Spacer()
                         }
-                    }
-                    .padding()
-                } else {
-                    // Routines List
-                    List {
-                        ForEach(routineStorage.routines) { routine in
-                            RoutineRowView(routine: routine, routineStorage: routineStorage)
+                        .padding(.horizontal, 24)
+                    } else {
+                        // Routines List
+                        ScrollView {
+                            LazyVStack(spacing: 16) {
+                                ForEach(routineStorage.routines) { routine in
+                                    RoutineRowView(routine: routine, routineStorage: routineStorage)
+                                }
+                            }
+                            .padding(.horizontal, 20)
+                            .padding(.top, 20)
                         }
-                        .onDelete(perform: deleteRoutines)
                     }
                 }
             }
             .navigationTitle("Routines")
+            .navigationBarTitleDisplayMode(.large)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button(action: { showingCreateRoutine = true }) {
                         Image(systemName: "plus")
+                            .foregroundColor(.lyftRed)
+                            .font(.system(size: 18, weight: .medium))
                     }
                 }
             }
@@ -86,18 +110,20 @@ struct RoutineRowView: View {
     @State private var showingWorkoutSession = false
     
     var body: some View {
-        HStack {
-            VStack(alignment: .leading, spacing: 4) {
-                Text(routine.name)
-                    .font(.headline)
-                    .fontWeight(.semibold)
+        VStack(spacing: 16) {
+            HStack {
+                VStack(alignment: .leading, spacing: 8) {
+                    Text(routine.name)
+                        .font(.system(size: 18, weight: .bold))
+                        .foregroundColor(.lyftText)
+                    
+                    Text("\(routine.exercises.count) exercises")
+                        .font(.system(size: 14, weight: .medium))
+                        .foregroundColor(.lyftTextSecondary)
+                }
                 
-                Text("\(routine.exercises.count) exercises")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
+                Spacer()
             }
-            
-            Spacer()
             
             HStack(spacing: 12) {
                 Button(action: {
@@ -105,14 +131,17 @@ struct RoutineRowView: View {
                     showingRoutineDetail = true
                     showingWorkoutSession = false
                 }) {
-                    Text("Edit")
-                        .font(.caption)
-                        .fontWeight(.medium)
-                        .foregroundColor(.blue)
-                        .padding(.horizontal, 16)
-                        .padding(.vertical, 8)
-                        .background(Color.blue.opacity(0.1))
-                        .cornerRadius(8)
+                    HStack(spacing: 8) {
+                        Image(systemName: "pencil")
+                            .font(.system(size: 14, weight: .medium))
+                        Text("Edit")
+                            .font(.system(size: 14, weight: .semibold))
+                    }
+                    .foregroundColor(.lyftRed)
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 10)
+                    .background(Color.lyftRed.opacity(0.1))
+                    .cornerRadius(8)
                 }
                 .buttonStyle(PlainButtonStyle())
                 
@@ -121,19 +150,26 @@ struct RoutineRowView: View {
                     showingWorkoutSession = true
                     showingRoutineDetail = false
                 }) {
-                    Text("Start Workout")
-                        .font(.caption)
-                        .fontWeight(.medium)
-                        .foregroundColor(.white)
-                        .padding(.horizontal, 16)
-                        .padding(.vertical, 8)
-                        .background(Color.blue)
-                        .cornerRadius(8)
+                    HStack(spacing: 8) {
+                        Image(systemName: "play.fill")
+                            .font(.system(size: 14, weight: .medium))
+                        Text("Start Workout")
+                            .font(.system(size: 14, weight: .semibold))
+                    }
+                    .foregroundColor(.white)
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 10)
+                    .background(Color.lyftRed)
+                    .cornerRadius(8)
                 }
                 .buttonStyle(PlainButtonStyle())
             }
         }
-        .padding(.vertical, 4)
+        .padding(.vertical, 20)
+        .padding(.horizontal, 20)
+        .background(Color.white)
+        .cornerRadius(16)
+        .shadow(color: Color.black.opacity(0.05), radius: 10, x: 0, y: 2)
         .sheet(isPresented: $showingRoutineDetail) {
             RoutineDetailView(routine: routine, routineStorage: routineStorage)
         }

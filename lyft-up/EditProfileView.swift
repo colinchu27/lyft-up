@@ -26,55 +26,137 @@ struct EditProfileView: View {
     
     var body: some View {
         NavigationView {
-            Form {
-                Section("Personal Information") {
-                    TextField("First Name", text: $firstName)
-                    TextField("Last Name", text: $lastName)
-                    
-                    HStack {
-                        TextField("Username", text: $username)
-                            .onChange(of: username) { _ in
-                                checkUsernameAvailability()
+            ZStack {
+                // Background
+                Color.lyftGray.ignoresSafeArea()
+                
+                ScrollView {
+                    VStack(spacing: 24) {
+                        // Personal Information Card
+                        VStack(alignment: .leading, spacing: 20) {
+                            Text("Personal Information")
+                                .font(.system(size: 20, weight: .bold))
+                                .foregroundColor(.lyftText)
+                            
+                            VStack(spacing: 16) {
+                                // First Name
+                                VStack(alignment: .leading, spacing: 8) {
+                                    Text("First Name")
+                                        .font(.system(size: 16, weight: .medium))
+                                        .foregroundColor(.lyftText)
+                                    
+                                    TextField("First Name", text: $firstName)
+                                        .textFieldStyle(LyftTextFieldStyle())
+                                }
+                                
+                                // Last Name
+                                VStack(alignment: .leading, spacing: 8) {
+                                    Text("Last Name")
+                                        .font(.system(size: 16, weight: .medium))
+                                        .foregroundColor(.lyftText)
+                                    
+                                    TextField("Last Name", text: $lastName)
+                                        .textFieldStyle(LyftTextFieldStyle())
+                                }
+                                
+                                // Username
+                                VStack(alignment: .leading, spacing: 8) {
+                                    Text("Username")
+                                        .font(.system(size: 16, weight: .medium))
+                                        .foregroundColor(.lyftText)
+                                    
+                                    HStack {
+                                        TextField("Username", text: $username)
+                                            .textFieldStyle(LyftTextFieldStyle())
+                                            .onChange(of: username) { _ in
+                                                checkUsernameAvailability()
+                                            }
+                                        
+                                        if isCheckingUsername {
+                                            ProgressView()
+                                                .scaleEffect(0.8)
+                                                .foregroundColor(.lyftRed)
+                                        } else {
+                                            usernameStatusIcon
+                                        }
+                                    }
+                                    
+                                    if username.count > 0 && username != originalUsername {
+                                        usernameStatusText
+                                    }
+                                }
                             }
+                        }
+                        .padding(.vertical, 24)
+                        .padding(.horizontal, 24)
+                        .background(Color.white)
+                        .cornerRadius(16)
+                        .shadow(color: Color.black.opacity(0.05), radius: 10, x: 0, y: 2)
+                        .padding(.horizontal, 20)
                         
-                        if isCheckingUsername {
-                            ProgressView()
-                                .scaleEffect(0.8)
-                        } else {
-                            usernameStatusIcon
+                        // Bio Card
+                        VStack(alignment: .leading, spacing: 16) {
+                            Text("Bio")
+                                .font(.system(size: 20, weight: .bold))
+                                .foregroundColor(.lyftText)
+                            
+                            TextField("Tell us about yourself...", text: $bio, axis: .vertical)
+                                .textFieldStyle(LyftTextFieldStyle())
+                                .lineLimit(3...6)
                         }
-                    }
-                    
-                    if username.count > 0 && username != originalUsername {
-                        usernameStatusText
-                    }
-                }
-                
-                Section("Bio") {
-                    TextField("Tell us about yourself...", text: $bio, axis: .vertical)
-                        .lineLimit(3...6)
-                }
-                
-                Section("Fitness Goal") {
-                    TextField("What's your fitness goal?", text: $fitnessGoal, axis: .vertical)
-                        .lineLimit(2...4)
-                    
-                    Toggle("Make goal public", isOn: $isGoalPublic)
-                }
-                
-                Section {
-                    Button(action: saveProfile) {
-                        if isLoading {
-                            HStack {
-                                ProgressView()
-                                    .scaleEffect(0.8)
-                                Text("Saving...")
+                        .padding(.vertical, 24)
+                        .padding(.horizontal, 24)
+                        .background(Color.white)
+                        .cornerRadius(16)
+                        .shadow(color: Color.black.opacity(0.05), radius: 10, x: 0, y: 2)
+                        .padding(.horizontal, 20)
+                        
+                        // Fitness Goal Card
+                        VStack(alignment: .leading, spacing: 16) {
+                            Text("Fitness Goal")
+                                .font(.system(size: 20, weight: .bold))
+                                .foregroundColor(.lyftText)
+                            
+                            VStack(spacing: 16) {
+                                TextField("What's your fitness goal?", text: $fitnessGoal, axis: .vertical)
+                                    .textFieldStyle(LyftTextFieldStyle())
+                                    .lineLimit(2...4)
+                                
+                                Toggle("Make goal public", isOn: $isGoalPublic)
+                                    .toggleStyle(SwitchToggleStyle(tint: .lyftRed))
+                                    .font(.system(size: 16, weight: .medium))
+                                    .foregroundColor(.lyftText)
                             }
-                        } else {
-                            Text("Save Changes")
                         }
+                        .padding(.vertical, 24)
+                        .padding(.horizontal, 24)
+                        .background(Color.white)
+                        .cornerRadius(16)
+                        .shadow(color: Color.black.opacity(0.05), radius: 10, x: 0, y: 2)
+                        .padding(.horizontal, 20)
+                        
+                        // Save Button
+                        Button(action: saveProfile) {
+                            HStack(spacing: 12) {
+                                if isLoading {
+                                    ProgressView()
+                                        .progressViewStyle(CircularProgressViewStyle(tint: .white))
+                                        .scaleEffect(0.8)
+                                } else {
+                                    Image(systemName: "checkmark.circle.fill")
+                                        .font(.system(size: 16, weight: .medium))
+                                }
+                                
+                                Text(isLoading ? "Saving..." : "Save Changes")
+                                    .font(.system(size: 16, weight: .semibold))
+                            }
+                        }
+                        .buttonStyle(LyftButtonStyle())
+                        .disabled(isLoading || !isFormValid)
+                        .padding(.horizontal, 20)
+                        .padding(.bottom, 20)
                     }
-                    .disabled(isLoading || !isFormValid)
+                    .padding(.top, 20)
                 }
             }
             .navigationTitle("Edit Profile")
@@ -84,6 +166,8 @@ struct EditProfileView: View {
                     Button("Cancel") {
                         dismiss()
                     }
+                    .foregroundColor(.lyftRed)
+                    .font(.system(size: 16, weight: .medium))
                 }
             }
             .onAppear {
@@ -164,12 +248,13 @@ struct EditProfileView: View {
             case .checking:
                 ProgressView()
                     .scaleEffect(0.8)
+                    .foregroundColor(.lyftRed)
             case .available:
                 Image(systemName: "checkmark.circle.fill")
                     .foregroundColor(.green)
             case .taken:
                 Image(systemName: "xmark.circle.fill")
-                    .foregroundColor(.red)
+                    .foregroundColor(.lyftRed)
             case .invalid:
                 Image(systemName: "exclamationmark.circle.fill")
                     .foregroundColor(.orange)
@@ -184,19 +269,19 @@ struct EditProfileView: View {
                 EmptyView()
             case .checking:
                 Text("Checking availability...")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
+                    .font(.system(size: 14, weight: .medium))
+                    .foregroundColor(.lyftTextSecondary)
             case .available:
                 Text("Username is available!")
-                    .font(.caption)
+                    .font(.system(size: 14, weight: .medium))
                     .foregroundColor(.green)
             case .taken:
                 Text("Username is already taken")
-                    .font(.caption)
-                    .foregroundColor(.red)
+                    .font(.system(size: 14, weight: .medium))
+                    .foregroundColor(.lyftRed)
             case .invalid:
                 Text("Username must be at least 3 characters")
-                    .font(.caption)
+                    .font(.system(size: 14, weight: .medium))
                     .foregroundColor(.orange)
             }
         }

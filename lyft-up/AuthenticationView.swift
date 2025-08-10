@@ -20,97 +20,108 @@ struct AuthenticationView: View {
     
     var body: some View {
         NavigationView {
-            VStack(spacing: 30) {
-                // Header
-                VStack(spacing: 16) {
-                    Image(systemName: "dumbbell.fill")
-                        .font(.system(size: 80))
-                        .foregroundColor(.blue)
-                    
-                    Text("Lyft Up")
-                        .font(.largeTitle)
-                        .fontWeight(.bold)
-                    
-                    Text(isSignUp ? "Create your account" : "Welcome back")
-                        .font(.title2)
-                        .foregroundColor(.secondary)
-                }
+            ZStack {
+                // Background
+                Color.white.ignoresSafeArea()
                 
-                // Form
-                VStack(spacing: 20) {
-                    // Email Field
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text("Email")
-                            .font(.headline)
-                            .foregroundColor(.primary)
-                        
-                        TextField("Enter your email", text: $email)
-                            .textFieldStyle(RoundedBorderTextFieldStyle())
-                            .keyboardType(.emailAddress)
-                            .autocapitalization(.none)
-                            .autocorrectionDisabled()
-                    }
-                    
-                    // Password Field
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text("Password")
-                            .font(.headline)
-                            .foregroundColor(.primary)
-                        
-                        SecureField("Enter your password", text: $password)
-                            .textFieldStyle(RoundedBorderTextFieldStyle())
-                    }
-                    
-                    // Confirm Password Field (Sign Up Only)
-                    if isSignUp {
-                        VStack(alignment: .leading, spacing: 8) {
-                            Text("Confirm Password")
-                                .font(.headline)
-                                .foregroundColor(.primary)
+                VStack(spacing: 40) {
+                    // Header
+                    VStack(spacing: 20) {
+                        // Logo and Brand
+                        VStack(spacing: 16) {
+                            ZStack {
+                                Circle()
+                                    .fill(Color.lyftRed.opacity(0.1))
+                                    .frame(width: 100, height: 100)
+                                
+                                Image(systemName: "dumbbell.fill")
+                                    .font(.system(size: 40))
+                                    .foregroundColor(.lyftRed)
+                            }
                             
-                            SecureField("Confirm your password", text: $confirmPassword)
-                                .textFieldStyle(RoundedBorderTextFieldStyle())
+                            Text("Lyft Up")
+                                .font(.system(size: 32, weight: .bold, design: .rounded))
+                                .foregroundColor(.lyftText)
+                            
+                            Text(isSignUp ? "Create your account" : "Welcome back")
+                                .font(.title3)
+                                .foregroundColor(.lyftTextSecondary)
                         }
                     }
-                }
-                .padding(.horizontal, 20)
-                
-                // Action Button
-                Button(action: handleAuthentication) {
-                    HStack {
-                        if isLoading {
-                            ProgressView()
-                                .progressViewStyle(CircularProgressViewStyle(tint: .white))
-                                .scaleEffect(0.8)
-                        } else {
-                            Image(systemName: isSignUp ? "person.badge.plus" : "person.fill")
+                    
+                    // Form
+                    VStack(spacing: 24) {
+                        // Email Field
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("Email")
+                                .font(.headline)
+                                .foregroundColor(.lyftText)
+                            
+                            TextField("Enter your email", text: $email)
+                                .textFieldStyle(LyftTextFieldStyle())
+                                .keyboardType(.emailAddress)
+                                .autocapitalization(.none)
+                                .autocorrectionDisabled()
                         }
                         
-                        Text(isSignUp ? "Sign Up" : "Sign In")
-                            .fontWeight(.semibold)
+                        // Password Field
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("Password")
+                                .font(.headline)
+                                .foregroundColor(.lyftText)
+                            
+                            SecureField("Enter your password", text: $password)
+                                .textFieldStyle(LyftTextFieldStyle())
+                        }
+                        
+                        // Confirm Password Field (Sign Up Only)
+                        if isSignUp {
+                            VStack(alignment: .leading, spacing: 8) {
+                                Text("Confirm Password")
+                                    .font(.headline)
+                                    .foregroundColor(.lyftText)
+                                
+                                SecureField("Confirm your password", text: $confirmPassword)
+                                    .textFieldStyle(LyftTextFieldStyle())
+                            }
+                        }
                     }
-                    .foregroundColor(.white)
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 16)
-                    .background(isFormValid ? Color.blue : Color.gray)
-                    .cornerRadius(12)
+                    .padding(.horizontal, 24)
+                    
+                    // Action Button
+                    Button(action: handleAuthentication) {
+                        HStack(spacing: 12) {
+                            if isLoading {
+                                ProgressView()
+                                    .progressViewStyle(CircularProgressViewStyle(tint: .white))
+                                    .scaleEffect(0.8)
+                            } else {
+                                Image(systemName: isSignUp ? "person.badge.plus" : "person.fill")
+                                    .font(.system(size: 16, weight: .medium))
+                            }
+                            
+                            Text(isSignUp ? "Sign Up" : "Sign In")
+                                .font(.system(size: 16, weight: .semibold))
+                        }
+                    }
+                    .buttonStyle(LyftButtonStyle())
+                    .disabled(!isFormValid || isLoading)
+                    .padding(.horizontal, 24)
+                    
+                    // Toggle Sign In/Sign Up
+                    Button(action: { 
+                        isSignUp.toggle()
+                        clearForm()
+                    }) {
+                        Text(isSignUp ? "Already have an account? Sign In" : "Don't have an account? Sign Up")
+                            .foregroundColor(.lyftRed)
+                            .font(.system(size: 14, weight: .medium))
+                    }
+                    
+                    Spacer()
                 }
-                .disabled(!isFormValid || isLoading)
-                .padding(.horizontal, 20)
-                
-                // Toggle Sign In/Sign Up
-                Button(action: { 
-                    isSignUp.toggle()
-                    clearForm()
-                }) {
-                    Text(isSignUp ? "Already have an account? Sign In" : "Don't have an account? Sign Up")
-                        .foregroundColor(.blue)
-                        .font(.subheadline)
-                }
-                
-                Spacer()
+                .padding(.top, 60)
             }
-            .padding(.top, 50)
             .navigationBarHidden(true)
             .alert("Authentication Error", isPresented: $showError) {
                 Button("OK") { }

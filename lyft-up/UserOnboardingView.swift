@@ -23,111 +23,122 @@ struct UserOnboardingView: View {
     
     var body: some View {
         NavigationView {
-            ScrollView {
-                VStack(spacing: 30) {
-                    // Header
-                    VStack(spacing: 16) {
-                        Image(systemName: "person.crop.circle.badge.plus")
-                            .font(.system(size: 80))
-                            .foregroundColor(.blue)
-                        
-                        Text("Complete Your Profile")
-                            .font(.largeTitle)
-                            .fontWeight(.bold)
-                        
-                        Text("Tell us a bit about yourself")
-                            .font(.title2)
-                            .foregroundColor(.secondary)
-                    }
-                    .padding(.top, 20)
-                    
-                    // Form
-                    VStack(spacing: 24) {
-                        // Username Field
-                        VStack(alignment: .leading, spacing: 8) {
-                            Text("Username")
-                                .font(.headline)
-                                .foregroundColor(.primary)
-                            
-                            HStack {
-                                TextField("Enter username", text: $username)
-                                    .textFieldStyle(RoundedBorderTextFieldStyle())
-                                    .autocapitalization(.none)
-                                    .autocorrectionDisabled()
-                                    .onChange(of: username) { _ in
-                                        checkUsernameAvailability()
-                                    }
+            ZStack {
+                // Background
+                Color.lyftGray.ignoresSafeArea()
+                
+                ScrollView {
+                    VStack(spacing: 32) {
+                        // Header
+                        VStack(spacing: 20) {
+                            ZStack {
+                                Circle()
+                                    .fill(Color.lyftRed.opacity(0.1))
+                                    .frame(width: 120, height: 120)
                                 
-                                if isCheckingUsername {
-                                    ProgressView()
-                                        .scaleEffect(0.8)
-                                } else {
-                                    usernameStatusIcon
+                                Image(systemName: "person.crop.circle.badge.plus")
+                                    .font(.system(size: 50))
+                                    .foregroundColor(.lyftRed)
+                            }
+                            
+                            VStack(spacing: 12) {
+                                Text("Complete Your Profile")
+                                    .font(.system(size: 28, weight: .bold, design: .rounded))
+                                    .foregroundColor(.lyftText)
+                                
+                                Text("Tell us a bit about yourself")
+                                    .font(.system(size: 18, weight: .medium))
+                                    .foregroundColor(.lyftTextSecondary)
+                            }
+                        }
+                        .padding(.top, 40)
+                        
+                        // Form
+                        VStack(spacing: 24) {
+                            // Username Field
+                            VStack(alignment: .leading, spacing: 12) {
+                                Text("Username")
+                                    .font(.system(size: 16, weight: .semibold))
+                                    .foregroundColor(.lyftText)
+                                
+                                HStack {
+                                    TextField("Enter username", text: $username)
+                                        .textFieldStyle(LyftTextFieldStyle())
+                                        .autocapitalization(.none)
+                                        .autocorrectionDisabled()
+                                        .onChange(of: username) { _ in
+                                            checkUsernameAvailability()
+                                        }
+                                    
+                                    if isCheckingUsername {
+                                        ProgressView()
+                                            .scaleEffect(0.8)
+                                            .foregroundColor(.lyftRed)
+                                    } else {
+                                        usernameStatusIcon
+                                    }
+                                }
+                                
+                                if username.count > 0 {
+                                    usernameStatusText
                                 }
                             }
                             
-                            if username.count > 0 {
-                                usernameStatusText
-                            }
-                        }
-                        
-                        // First Name Field
-                        VStack(alignment: .leading, spacing: 8) {
-                            Text("First Name")
-                                .font(.headline)
-                                .foregroundColor(.primary)
-                            
-                            TextField("Enter first name", text: $firstName)
-                                .textFieldStyle(RoundedBorderTextFieldStyle())
-                        }
-                        
-                        // Last Name Field
-                        VStack(alignment: .leading, spacing: 8) {
-                            Text("Last Name")
-                                .font(.headline)
-                                .foregroundColor(.primary)
-                            
-                            TextField("Enter last name", text: $lastName)
-                                .textFieldStyle(RoundedBorderTextFieldStyle())
-                        }
-                        
-                        // Bio Field
-                        VStack(alignment: .leading, spacing: 8) {
-                            Text("Bio")
-                                .font(.headline)
-                                .foregroundColor(.primary)
-                            
-                            TextField("Tell us about your fitness goals...", text: $bio, axis: .vertical)
-                                .textFieldStyle(RoundedBorderTextFieldStyle())
-                                .lineLimit(3...6)
-                        }
-                    }
-                    .padding(.horizontal, 20)
-                    
-                    // Complete Profile Button
-                    Button(action: completeProfile) {
-                        HStack {
-                            if isLoading {
-                                ProgressView()
-                                    .progressViewStyle(CircularProgressViewStyle(tint: .white))
-                                    .scaleEffect(0.8)
-                            } else {
-                                Image(systemName: "checkmark.circle.fill")
+                            // First Name Field
+                            VStack(alignment: .leading, spacing: 12) {
+                                Text("First Name")
+                                    .font(.system(size: 16, weight: .semibold))
+                                    .foregroundColor(.lyftText)
+                                
+                                TextField("Enter first name", text: $firstName)
+                                    .textFieldStyle(LyftTextFieldStyle())
                             }
                             
-                            Text("Complete Profile")
-                                .fontWeight(.semibold)
+                            // Last Name Field
+                            VStack(alignment: .leading, spacing: 12) {
+                                Text("Last Name")
+                                    .font(.system(size: 16, weight: .semibold))
+                                    .foregroundColor(.lyftText)
+                                
+                                TextField("Enter last name", text: $lastName)
+                                    .textFieldStyle(LyftTextFieldStyle())
+                            }
+                            
+                            // Bio Field
+                            VStack(alignment: .leading, spacing: 12) {
+                                Text("Bio")
+                                    .font(.system(size: 16, weight: .semibold))
+                                    .foregroundColor(.lyftText)
+                                
+                                TextField("Tell us about your fitness goals...", text: $bio, axis: .vertical)
+                                    .textFieldStyle(LyftTextFieldStyle())
+                                    .lineLimit(3...6)
+                            }
                         }
-                        .foregroundColor(.white)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 16)
-                        .background(isFormValid ? Color.blue : Color.gray)
-                        .cornerRadius(12)
+                        .padding(.horizontal, 24)
+                        
+                        // Complete Profile Button
+                        Button(action: completeProfile) {
+                            HStack(spacing: 12) {
+                                if isLoading {
+                                    ProgressView()
+                                        .progressViewStyle(CircularProgressViewStyle(tint: .white))
+                                        .scaleEffect(0.8)
+                                } else {
+                                    Image(systemName: "checkmark.circle.fill")
+                                        .font(.system(size: 16, weight: .medium))
+                                }
+                                
+                                Text(isLoading ? "Creating Profile..." : "Complete Profile")
+                                    .font(.system(size: 16, weight: .semibold))
+                            }
+                        }
+                        .buttonStyle(LyftButtonStyle())
+                        .disabled(!isFormValid || isLoading)
+                        .padding(.horizontal, 24)
+                        
+                        Spacer(minLength: 40)
                     }
-                    .disabled(!isFormValid || isLoading)
-                    .padding(.horizontal, 20)
-                    
-                    Spacer(minLength: 50)
                 }
             }
             .navigationBarHidden(true)
@@ -140,11 +151,48 @@ struct UserOnboardingView: View {
     }
     
     private var isFormValid: Bool {
-        !username.isEmpty && 
-        !firstName.isEmpty && 
-        !lastName.isEmpty &&
-        username.count >= 3 &&
+        !username.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty &&
+        !firstName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty &&
         usernameStatus == .available
+    }
+    
+    private func completeProfile() {
+        guard let user = firebaseService.currentUser else {
+            errorMessage = "No user found"
+            showError = true
+            return
+        }
+        
+        isLoading = true
+        
+        let profile = UserProfile(
+            id: user.uid,
+            username: username.trimmingCharacters(in: .whitespacesAndNewlines),
+            firstName: firstName.trimmingCharacters(in: .whitespacesAndNewlines),
+            lastName: lastName.trimmingCharacters(in: .whitespacesAndNewlines),
+            bio: bio.trimmingCharacters(in: .whitespacesAndNewlines),
+            friendIds: [],
+            createdAt: Date(),
+            fitnessGoal: "",
+            isGoalPublic: false
+        )
+        
+        Task {
+            do {
+                try await firebaseService.saveUserProfile(profile)
+                await MainActor.run {
+                    firebaseService.userProfile = profile
+                    firebaseService.needsOnboarding = false
+                    isLoading = false
+                }
+            } catch {
+                await MainActor.run {
+                    isLoading = false
+                    errorMessage = error.localizedDescription
+                    showError = true
+                }
+            }
+        }
     }
     
     private var usernameStatusIcon: some View {
@@ -155,12 +203,13 @@ struct UserOnboardingView: View {
             case .checking:
                 ProgressView()
                     .scaleEffect(0.8)
+                    .foregroundColor(.lyftRed)
             case .available:
                 Image(systemName: "checkmark.circle.fill")
                     .foregroundColor(.green)
             case .taken:
                 Image(systemName: "xmark.circle.fill")
-                    .foregroundColor(.red)
+                    .foregroundColor(.lyftRed)
             case .invalid:
                 Image(systemName: "exclamationmark.circle.fill")
                     .foregroundColor(.orange)
@@ -175,19 +224,19 @@ struct UserOnboardingView: View {
                 EmptyView()
             case .checking:
                 Text("Checking availability...")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
+                    .font(.system(size: 14, weight: .medium))
+                    .foregroundColor(.lyftTextSecondary)
             case .available:
                 Text("Username is available!")
-                    .font(.caption)
+                    .font(.system(size: 14, weight: .medium))
                     .foregroundColor(.green)
             case .taken:
                 Text("Username is already taken")
-                    .font(.caption)
-                    .foregroundColor(.red)
+                    .font(.system(size: 14, weight: .medium))
+                    .foregroundColor(.lyftRed)
             case .invalid:
                 Text("Username must be at least 3 characters")
-                    .font(.caption)
+                    .font(.system(size: 14, weight: .medium))
                     .foregroundColor(.orange)
             }
         }
@@ -218,49 +267,7 @@ struct UserOnboardingView: View {
             }
         }
     }
-    
-    private func completeProfile() {
-        isLoading = true
-        errorMessage = ""
-        
-        Task {
-            do {
-                // Create user profile with all the information
-                let userProfile = UserProfile(
-                    id: firebaseService.currentUser?.uid ?? "",
-                    username: username,
-                    firstName: firstName,
-                    lastName: lastName,
-                    bio: bio
-                )
-                
-                // Save to Firebase
-                try await firebaseService.saveUserProfile(userProfile)
-                
-                await MainActor.run {
-                    isLoading = false
-                    dismiss()
-                }
-            } catch {
-                await MainActor.run {
-                    isLoading = false
-                    errorMessage = error.localizedDescription
-                    showError = true
-                }
-            }
-        }
-    }
 }
-
-// MARK: - Username Status Enum
-enum UsernameStatus {
-    case none
-    case checking
-    case available
-    case taken
-    case invalid
-}
-
 
 #Preview {
     UserOnboardingView()

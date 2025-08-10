@@ -16,194 +16,255 @@ struct ProfileView: View {
     
     var body: some View {
         NavigationView {
-            ScrollView {
-                VStack(spacing: 24) {
-                    // Profile Header
-                    VStack(spacing: 16) {
-                        Image(systemName: "person.crop.circle")
-                            .font(.system(size: 80))
-                            .foregroundColor(.blue)
-                        
-                        Text(userDisplayName)
-                            .font(.title2)
-                            .fontWeight(.semibold)
-                        
-                        Text(userBio)
-                            .font(.subheadline)
-                            .foregroundColor(.secondary)
-                            .multilineTextAlignment(.center)
-                    }
-                    .padding(.top, 20)
-                    
-                    // Your Fitness Profile Section
-                    VStack(alignment: .leading, spacing: 16) {
-                        Text("Your Fitness Profile")
-                            .font(.headline)
-                            .fontWeight(.semibold)
-                            .padding(.horizontal, 20)
-                        
-                        VStack(spacing: 12) {
-                            HStack {
-                                Image(systemName: "flame")
-                                    .foregroundColor(.orange)
-                                    .frame(width: 24)
-                                Text("Total Workouts")
-                                Spacer()
-                                Text("\(statsStorage.stats.totalWorkouts)")
-                                    .foregroundColor(.secondary)
-                            }
-                            .padding(.horizontal, 20)
-                            
-                            HStack {
-                                Image(systemName: "dumbbell.fill")
-                                    .foregroundColor(.blue)
-                                    .frame(width: 24)
-                                Text("Total Weight Lifted")
-                                Spacer()
-                                Text("\(Int(statsStorage.stats.totalWeightLifted)) lbs")
-                                    .foregroundColor(.secondary)
-                            }
-                            .padding(.horizontal, 20)
-                            
-                            // Fitness Goal Section
-                            VStack(alignment: .leading, spacing: 12) {
-                                HStack {
-                                    Image(systemName: "target")
-                                        .foregroundColor(.green)
-                                        .frame(width: 24)
-                                    Text("Fitness Goal")
-                                    Spacer()
-                                    Button(action: { showingEditProfile = true }) {
-                                        Image(systemName: "pencil.circle")
-                                            .foregroundColor(.blue)
-                                            .font(.caption)
-                                    }
-                                }
-                                .padding(.horizontal, 20)
+            ZStack {
+                // Background
+                Color.lyftGray.ignoresSafeArea()
+                
+                ScrollView {
+                    VStack(spacing: 24) {
+                        // Profile Header Card
+                        VStack(spacing: 20) {
+                            // Profile Avatar
+                            ZStack {
+                                Circle()
+                                    .fill(Color.lyftRed.opacity(0.1))
+                                    .frame(width: 100, height: 100)
                                 
-                                if let profile = firebaseService.userProfile, !profile.fitnessGoal.isEmpty {
-                                    VStack(alignment: .leading, spacing: 4) {
-                                        Text(profile.fitnessGoal)
-                                            .font(.subheadline)
-                                            .foregroundColor(.primary)
-                                            .multilineTextAlignment(.leading)
-                                            .padding(.horizontal, 20)
-                                            .padding(.vertical, 12)
-                                            .frame(maxWidth: .infinity, alignment: .leading)
-                                            .background(Color(.systemGray6))
-                                            .cornerRadius(8)
-                                            .padding(.horizontal, 20)
+                                Image(systemName: "person.crop.circle.fill")
+                                    .font(.system(size: 60))
+                                    .foregroundColor(.lyftRed)
+                            }
+                            
+                            VStack(spacing: 8) {
+                                Text(userDisplayName)
+                                    .font(.system(size: 24, weight: .bold))
+                                    .foregroundColor(.lyftText)
+                                
+                                Text(userBio)
+                                    .font(.system(size: 16, weight: .medium))
+                                    .foregroundColor(.lyftTextSecondary)
+                                    .multilineTextAlignment(.center)
+                            }
+                        }
+                        .padding(.vertical, 32)
+                        .padding(.horizontal, 24)
+                        .background(Color.white)
+                        .cornerRadius(16)
+                        .shadow(color: Color.black.opacity(0.05), radius: 10, x: 0, y: 2)
+                        .padding(.horizontal, 20)
+                        
+                        // Fitness Stats Card
+                        VStack(alignment: .leading, spacing: 20) {
+                            Text("Your Fitness Profile")
+                                .font(.system(size: 20, weight: .bold))
+                                .foregroundColor(.lyftText)
+                            
+                            VStack(spacing: 16) {
+                                // Total Workouts
+                                HStack {
+                                    ZStack {
+                                        Circle()
+                                            .fill(Color.lyftRed.opacity(0.1))
+                                            .frame(width: 40, height: 40)
+                                        
+                                        Image(systemName: "flame.fill")
+                                            .font(.system(size: 18))
+                                            .foregroundColor(.lyftRed)
                                     }
-                                } else {
+                                    
                                     VStack(alignment: .leading, spacing: 4) {
-                                        Text("Set your fitness goal")
-                                            .font(.subheadline)
-                                            .foregroundColor(.secondary)
-                                            .padding(.horizontal, 20)
-                                            .padding(.vertical, 12)
-                                            .frame(maxWidth: .infinity, alignment: .leading)
-                                            .background(Color(.systemGray6))
-                                            .cornerRadius(8)
-                                            .padding(.horizontal, 20)
+                                        Text("Total Workouts")
+                                            .font(.system(size: 14, weight: .medium))
+                                            .foregroundColor(.lyftTextSecondary)
+                                        Text("\(statsStorage.stats.totalWorkouts)")
+                                            .font(.system(size: 18, weight: .bold))
+                                            .foregroundColor(.lyftText)
                                     }
+                                    
+                                    Spacer()
+                                }
+                                
+                                // Total Weight Lifted
+                                HStack {
+                                    ZStack {
+                                        Circle()
+                                            .fill(Color.lyftRed.opacity(0.1))
+                                            .frame(width: 40, height: 40)
+                                        
+                                        Image(systemName: "dumbbell.fill")
+                                            .font(.system(size: 18))
+                                            .foregroundColor(.lyftRed)
+                                    }
+                                    
+                                    VStack(alignment: .leading, spacing: 4) {
+                                        Text("Total Weight Lifted")
+                                            .font(.system(size: 14, weight: .medium))
+                                            .foregroundColor(.lyftTextSecondary)
+                                        Text("\(Int(statsStorage.stats.totalWeightLifted)) lbs")
+                                            .font(.system(size: 18, weight: .bold))
+                                            .foregroundColor(.lyftText)
+                                    }
+                                    
+                                    Spacer()
+                                }
+                            }
+                        }
+                        .padding(.vertical, 24)
+                        .padding(.horizontal, 24)
+                        .background(Color.white)
+                        .cornerRadius(16)
+                        .shadow(color: Color.black.opacity(0.05), radius: 10, x: 0, y: 2)
+                        .padding(.horizontal, 20)
+                        
+                        // Fitness Goal Card
+                        VStack(alignment: .leading, spacing: 16) {
+                            HStack {
+                                ZStack {
+                                    Circle()
+                                        .fill(Color.lyftRed.opacity(0.1))
+                                        .frame(width: 32, height: 32)
+                                    
+                                    Image(systemName: "target")
+                                        .font(.system(size: 16))
+                                        .foregroundColor(.lyftRed)
+                                }
+                                
+                                Text("Fitness Goal")
+                                    .font(.system(size: 18, weight: .bold))
+                                    .foregroundColor(.lyftText)
+                                
+                                Spacer()
+                                
+                                Button(action: { showingEditProfile = true }) {
+                                    Image(systemName: "pencil.circle.fill")
+                                        .font(.system(size: 20))
+                                        .foregroundColor(.lyftRed)
                                 }
                             }
                             
-
-                        }
-                        .padding(.vertical, 16)
-                        .cornerRadius(12)
-                        .padding(.horizontal, 20)
-                    }
-                    
-                    // Workout History Section
-                    VStack(alignment: .leading, spacing: 16) {
-                        Text("Workout History")
-                            .font(.headline)
-                            .fontWeight(.semibold)
-                            .padding(.horizontal, 20)
-                        
-                        VStack(spacing: 12) {
-                            Button(action: { showingWorkoutHistory = true }) {
-                                HStack {
-                                    Image(systemName: "clock.arrow.circlepath")
-                                        .foregroundColor(.blue)
-                                        .frame(width: 24)
-                                    Text("View Workout History")
-                                    Spacer()
-                                    Image(systemName: "chevron.right")
-                                        .foregroundColor(.blue)
-                                        .font(.caption)
-                                }
-                                .foregroundColor(.primary)
-                                .padding(.horizontal, 20)
-                                .padding(.vertical, 12)
-                                .background(Color(.systemGray6))
-                                .cornerRadius(8)
+                            if let profile = firebaseService.userProfile, !profile.fitnessGoal.isEmpty {
+                                Text(profile.fitnessGoal)
+                                    .font(.system(size: 16, weight: .medium))
+                                    .foregroundColor(.lyftText)
+                                    .padding(.vertical, 16)
+                                    .padding(.horizontal, 16)
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                                    .background(Color.lyftGray)
+                                    .cornerRadius(12)
+                            } else {
+                                Text("Set your fitness goal")
+                                    .font(.system(size: 16, weight: .medium))
+                                    .foregroundColor(.lyftTextSecondary)
+                                    .padding(.vertical, 16)
+                                    .padding(.horizontal, 16)
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                                    .background(Color.lyftGray)
+                                    .cornerRadius(12)
                             }
-                            .buttonStyle(PlainButtonStyle())
+                        }
+                        .padding(.vertical, 24)
+                        .padding(.horizontal, 24)
+                        .background(Color.white)
+                        .cornerRadius(16)
+                        .shadow(color: Color.black.opacity(0.05), radius: 10, x: 0, y: 2)
+                        .padding(.horizontal, 20)
+                        
+                        // Workout History Card
+                        VStack(alignment: .leading, spacing: 16) {
+                            HStack {
+                                ZStack {
+                                    Circle()
+                                        .fill(Color.lyftRed.opacity(0.1))
+                                        .frame(width: 32, height: 32)
+                                    
+                                    Image(systemName: "clock.arrow.circlepath")
+                                        .font(.system(size: 16))
+                                        .foregroundColor(.lyftRed)
+                                }
+                                
+                                Text("Workout History")
+                                    .font(.system(size: 18, weight: .bold))
+                                    .foregroundColor(.lyftText)
+                                
+                                Spacer()
+                                
+                                Button(action: { showingWorkoutHistory = true }) {
+                                    Image(systemName: "chevron.right")
+                                        .font(.system(size: 16, weight: .medium))
+                                        .foregroundColor(.lyftRed)
+                                }
+                            }
                             
                             Text("Track your progress and review past workouts")
-                                .font(.subheadline)
-                                .foregroundColor(.secondary)
-                                .padding(.horizontal, 20)
-                                .padding(.bottom, 16)
+                                .font(.system(size: 14, weight: .medium))
+                                .foregroundColor(.lyftTextSecondary)
                         }
-                        .padding(.vertical, 16)
-                        .cornerRadius(12)
+                        .padding(.vertical, 24)
+                        .padding(.horizontal, 24)
+                        .background(Color.white)
+                        .cornerRadius(16)
+                        .shadow(color: Color.black.opacity(0.05), radius: 10, x: 0, y: 2)
                         .padding(.horizontal, 20)
-                    }
-                    
-                    // Friends Section
-                    VStack(alignment: .leading, spacing: 16) {
-                        Text("Friends")
-                            .font(.headline)
-                            .fontWeight(.semibold)
-                            .padding(.horizontal, 20)
                         
-                        VStack(spacing: 12) {
+                        // Friends Card
+                        VStack(alignment: .leading, spacing: 16) {
                             HStack {
-                                Image(systemName: "person.2")
-                                    .foregroundColor(.blue)
-                                    .frame(width: 24)
-                                Text("Workout Buddies")
+                                ZStack {
+                                    Circle()
+                                        .fill(Color.lyftRed.opacity(0.1))
+                                        .frame(width: 32, height: 32)
+                                    
+                                    Image(systemName: "person.2.fill")
+                                        .font(.system(size: 16))
+                                        .foregroundColor(.lyftRed)
+                                }
+                                
+                                Text("Friends")
+                                    .font(.system(size: 18, weight: .bold))
+                                    .foregroundColor(.lyftText)
+                                
                                 Spacer()
+                                
                                 Text("0 friends")
-                                    .foregroundColor(.secondary)
+                                    .font(.system(size: 14, weight: .medium))
+                                    .foregroundColor(.lyftTextSecondary)
                             }
-                            .padding(.horizontal, 20)
                             
                             Text("Connect with friends to share workouts")
-                                .font(.subheadline)
-                                .foregroundColor(.secondary)
-                                .padding(.horizontal, 20)
-                                .padding(.bottom, 16)
+                                .font(.system(size: 14, weight: .medium))
+                                .foregroundColor(.lyftTextSecondary)
                         }
-                        .padding(.vertical, 16)
-                        .cornerRadius(12)
+                        .padding(.vertical, 24)
+                        .padding(.horizontal, 24)
+                        .background(Color.white)
+                        .cornerRadius(16)
+                        .shadow(color: Color.black.opacity(0.05), radius: 10, x: 0, y: 2)
                         .padding(.horizontal, 20)
+                        
+                        Spacer(minLength: 20)
                     }
-                    
-                    Spacer(minLength: 20)
+                    .padding(.top, 20)
                 }
             }
-                               .navigationTitle("Profile")
-                   .navigationBarTitleDisplayMode(.large)
-                   .toolbar {
-                       ToolbarItem(placement: .navigationBarLeading) {
-                           Button("Edit Profile") {
-                               showingEditProfile = true
-                           }
-                           .foregroundColor(.blue)
-                       }
-                       
-                       ToolbarItem(placement: .navigationBarTrailing) {
-                           Button("Sign Out") {
-                               showingSignOutAlert = true
-                           }
-                           .foregroundColor(.red)
-                       }
-                   }
+            .navigationTitle("Profile")
+            .navigationBarTitleDisplayMode(.large)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button("Edit Profile") {
+                        showingEditProfile = true
+                    }
+                    .foregroundColor(.lyftRed)
+                    .font(.system(size: 16, weight: .medium))
+                }
+                
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button("Sign Out") {
+                        showingSignOutAlert = true
+                    }
+                    .foregroundColor(.lyftRed)
+                    .font(.system(size: 16, weight: .medium))
+                }
+            }
             .sheet(isPresented: $showingWorkoutHistory) {
                 WorkoutHistoryView()
             }
