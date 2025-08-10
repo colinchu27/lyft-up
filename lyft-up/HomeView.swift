@@ -46,8 +46,6 @@ struct HomeView: View {
                 Spacer()
             }
             .padding()
-            .navigationTitle("Home")
-            .navigationBarTitleDisplayMode(.large)
             .onAppear {
                 // Refresh user profile when view appears
                 Task {
