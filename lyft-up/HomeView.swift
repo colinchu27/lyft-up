@@ -68,9 +68,10 @@ struct HomeView: View {
                                 .frame(maxWidth: .infinity, alignment: .leading)
                             
                             HStack(spacing: 16) {
-                                // Start Workout Button
+                                // Friends Button
                                 Button(action: {
-                                    // Navigate to workout session
+                                    // Navigate to friends tab (index 2)
+                                    selectedTab = 2
                                 }) {
                                     VStack(spacing: 12) {
                                         ZStack {
@@ -78,12 +79,12 @@ struct HomeView: View {
                                                 .fill(Color.lyftRed.opacity(0.1))
                                                 .frame(width: 50, height: 50)
                                             
-                                            Image(systemName: "play.fill")
+                                            Image(systemName: "person.2.fill")
                                                 .font(.system(size: 20))
                                                 .foregroundColor(.lyftRed)
                                         }
                                         
-                                        Text("Start Workout")
+                                        Text("Friends")
                                             .font(.system(size: 12, weight: .medium))
                                             .foregroundColor(.lyftText)
                                     }
