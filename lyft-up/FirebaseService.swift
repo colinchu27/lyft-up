@@ -231,24 +231,29 @@ class FirebaseService: ObservableObject {
             throw FirebaseError.userNotAuthenticated
         }
         
+        return try await loadWorkoutSessionsForUser(userId)
+    }
+    
+    func loadWorkoutSessionsForUser(_ userId: String) async throws -> [WorkoutSession] {
         do {
             let path = "users/\(userId)/workoutSessions"
             let snapshot = try await db.collection("users").document(userId)
                 .collection("workoutSessions")
                 .order(by: "startTime", descending: true)
+                .limit(to: 10) // Limit to recent 10 workouts
                 .getDocuments()
             
             let sessions = try snapshot.documents.compactMap { document in
                 try dictionaryToSession(document.data())
             }
             
-            print("💪 Loaded \(sessions.count) workout sessions from: \(path)")
+            print("💪 Loaded \(sessions.count) workout sessions for user \(userId) from: \(path)")
             for session in sessions {
                 print("   - \(session.routineName) (\(session.startTime.formatted()))")
             }
             return sessions
         } catch {
-            print("❌ Error loading workout sessions: \(error)")
+            print("❌ Error loading workout sessions for user \(userId): \(error)")
             throw error
         }
     }

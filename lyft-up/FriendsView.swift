@@ -652,6 +652,8 @@ struct SearchResultRow: View {
 struct FriendProfileView: View {
     let friend: UserProfile
     @Environment(\.dismiss) private var dismiss
+    @State private var recentWorkouts: [WorkoutSession] = []
+    @State private var isLoadingWorkouts = true
     
     var body: some View {
         NavigationView {
@@ -711,19 +713,40 @@ struct FriendProfileView: View {
                         .padding(.horizontal)
                     }
                     
-                    // Recent Activity Placeholder
+                    // Recent Activity
                     VStack(alignment: .leading, spacing: 12) {
                         Text("Recent Activity")
                             .font(.system(size: 18, weight: .semibold))
                             .foregroundColor(.lyftText)
                         
-                        Text("No recent workouts to display")
-                            .font(.system(size: 16))
-                            .foregroundColor(.lyftText.opacity(0.6))
+                        if isLoadingWorkouts {
+                            HStack {
+                                ProgressView()
+                                    .progressViewStyle(CircularProgressViewStyle(tint: .lyftRed))
+                                    .scaleEffect(0.8)
+                                Text("Loading recent workouts...")
+                                    .font(.system(size: 16))
+                                    .foregroundColor(.lyftText.opacity(0.6))
+                            }
                             .padding()
                             .frame(maxWidth: .infinity)
                             .background(Color.gray.opacity(0.1))
                             .cornerRadius(12)
+                        } else if recentWorkouts.isEmpty {
+                            Text("No recent workouts to display")
+                                .font(.system(size: 16))
+                                .foregroundColor(.lyftText.opacity(0.6))
+                                .padding()
+                                .frame(maxWidth: .infinity)
+                                .background(Color.gray.opacity(0.1))
+                                .cornerRadius(12)
+                        } else {
+                            LazyVStack(spacing: 8) {
+                                ForEach(recentWorkouts, id: \.id) { workout in
+                                    RecentWorkoutRow(workout: workout)
+                                }
+                            }
+                        }
                     }
                     .padding(.horizontal)
                 }
@@ -740,6 +763,76 @@ struct FriendProfileView: View {
                 }
             }
         }
+        .onAppear {
+            loadRecentWorkouts()
+        }
+    }
+    
+    private func loadRecentWorkouts() {
+        Task {
+            do {
+                let workouts = try await FirebaseService.shared.loadWorkoutSessionsForUser(friend.id)
+                await MainActor.run {
+                    self.recentWorkouts = workouts
+                    self.isLoadingWorkouts = false
+                }
+            } catch {
+                print("Error loading recent workouts for friend: \(error)")
+                await MainActor.run {
+                    self.isLoadingWorkouts = false
+                }
+            }
+        }
+    }
+}
+
+struct RecentWorkoutRow: View {
+    let workout: WorkoutSession
+    
+    var body: some View {
+        HStack(spacing: 12) {
+            // Workout icon
+            Circle()
+                .fill(Color.lyftRed.opacity(0.1))
+                .frame(width: 40, height: 40)
+                .overlay(
+                    Image(systemName: "dumbbell.fill")
+                        .font(.system(size: 16))
+                        .foregroundColor(.lyftRed)
+                )
+            
+            VStack(alignment: .leading, spacing: 4) {
+                Text(workout.routineName)
+                    .font(.system(size: 16, weight: .semibold))
+                    .foregroundColor(.lyftText)
+                
+                Text(formatWorkoutDate(workout.startTime))
+                    .font(.system(size: 14))
+                    .foregroundColor(.lyftText.opacity(0.6))
+            }
+            
+            Spacer()
+            
+            VStack(alignment: .trailing, spacing: 4) {
+                Text("\(workout.exercises.count)")
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundColor(.lyftRed)
+                
+                Text("exercises")
+                    .font(.system(size: 12))
+                    .foregroundColor(.lyftText.opacity(0.6))
+            }
+        }
+        .padding()
+        .background(Color.gray.opacity(0.1))
+        .cornerRadius(12)
+    }
+    
+    private func formatWorkoutDate(_ date: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.dateStyle = .medium
+        formatter.timeStyle = .short
+        return formatter.string(from: date)
     }
 }
 
