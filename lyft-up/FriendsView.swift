@@ -213,6 +213,9 @@ struct FriendsView: View {
                     // Remove from pending requests and reload friends
                     self.pendingRequests.removeAll { $0.id == request.id }
                     self.loadFriends()
+                    
+                    // Notify that friend list has been updated
+                    NotificationCenter.default.post(name: .friendListUpdated, object: nil)
                 }
             } catch {
                 print("Error accepting friend request: \(error)")

@@ -13,6 +13,8 @@ struct ProfileView: View {
     @State private var showingWorkoutHistory = false
     @State private var showingSignOutAlert = false
     @State private var showingEditProfile = false
+    @State private var friendCount = 0
+    @State private var isLoadingFriends = false
     
     var body: some View {
         NavigationView {
@@ -207,38 +209,54 @@ struct ProfileView: View {
                         .padding(.horizontal, 20)
                         
                         // Friends Card
-                        VStack(alignment: .leading, spacing: 16) {
-                            HStack {
-                                ZStack {
-                                    Circle()
-                                        .fill(Color.lyftRed.opacity(0.1))
-                                        .frame(width: 32, height: 32)
+                        Button(action: {
+                            // Navigate to FriendsView
+                            // This will be handled by the parent view
+                        }) {
+                            VStack(alignment: .leading, spacing: 16) {
+                                HStack {
+                                    ZStack {
+                                        Circle()
+                                            .fill(Color.lyftRed.opacity(0.1))
+                                            .frame(width: 32, height: 32)
+                                        
+                                        Image(systemName: "person.2.fill")
+                                            .font(.system(size: 16))
+                                            .foregroundColor(.lyftRed)
+                                    }
                                     
-                                    Image(systemName: "person.2.fill")
-                                        .font(.system(size: 16))
-                                        .foregroundColor(.lyftRed)
+                                    Text("Friends")
+                                        .font(.system(size: 18, weight: .bold))
+                                        .foregroundColor(.lyftText)
+                                    
+                                    Spacer()
+                                    
+                                    if isLoadingFriends {
+                                        ProgressView()
+                                            .progressViewStyle(CircularProgressViewStyle(tint: .lyftRed))
+                                            .scaleEffect(0.8)
+                                    } else {
+                                        Text("\(friendCount) friend\(friendCount == 1 ? "" : "s")")
+                                            .font(.system(size: 14, weight: .medium))
+                                            .foregroundColor(.lyftTextSecondary)
+                                    }
+                                    
+                                    Image(systemName: "chevron.right")
+                                        .font(.system(size: 14))
+                                        .foregroundColor(.lyftText.opacity(0.4))
                                 }
                                 
-                                Text("Friends")
-                                    .font(.system(size: 18, weight: .bold))
-                                    .foregroundColor(.lyftText)
-                                
-                                Spacer()
-                                
-                                Text("0 friends")
+                                Text("Connect with friends to share workouts")
                                     .font(.system(size: 14, weight: .medium))
                                     .foregroundColor(.lyftTextSecondary)
                             }
-                            
-                            Text("Connect with friends to share workouts")
-                                .font(.system(size: 14, weight: .medium))
-                                .foregroundColor(.lyftTextSecondary)
+                            .padding(.vertical, 24)
+                            .padding(.horizontal, 24)
+                            .background(Color.white)
+                            .cornerRadius(16)
+                            .shadow(color: Color.black.opacity(0.05), radius: 10, x: 0, y: 2)
                         }
-                        .padding(.vertical, 24)
-                        .padding(.horizontal, 24)
-                        .background(Color.white)
-                        .cornerRadius(16)
-                        .shadow(color: Color.black.opacity(0.05), radius: 10, x: 0, y: 2)
+                        .buttonStyle(PlainButtonStyle())
                         .padding(.horizontal, 20)
                         
                         Spacer(minLength: 20)
@@ -289,6 +307,17 @@ struct ProfileView: View {
                     // Load workout stats from Firebase user profile
                     statsStorage.loadFromFirebase()
                 }
+                
+                // Load friend count
+                loadFriendCount()
+            }
+            .onReceive(NotificationCenter.default.publisher(for: .friendListUpdated)) { _ in
+                // Refresh friend count when friends are added/removed
+                loadFriendCount()
+            }
+            .onReceive(NotificationCenter.default.publisher(for: UIApplication.willEnterForegroundNotification)) { _ in
+                // Refresh friend count when app comes back to foreground
+                loadFriendCount()
             }
         }
     }
@@ -318,6 +347,28 @@ struct ProfileView: View {
             try firebaseService.signOut()
         } catch {
             print("Error signing out: \(error)")
+        }
+    }
+    
+    private func loadFriendCount() {
+        guard firebaseService.isAuthenticated else { return }
+        
+        isLoadingFriends = true
+        
+        Task {
+            do {
+                let friends = try await firebaseService.loadFriends()
+                await MainActor.run {
+                    self.friendCount = friends.count
+                    self.isLoadingFriends = false
+                }
+            } catch {
+                print("Error loading friend count: \(error)")
+                await MainActor.run {
+                    self.friendCount = 0
+                    self.isLoadingFriends = false
+                }
+            }
         }
     }
 }

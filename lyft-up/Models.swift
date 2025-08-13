@@ -183,3 +183,8 @@ struct WorkoutStats: Codable {
         self.totalWeightLifted = 0.0
     }
 }
+
+// MARK: - Notification Names
+extension Notification.Name {
+    static let friendListUpdated = Notification.Name("friendListUpdated")
+}
