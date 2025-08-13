@@ -89,9 +89,8 @@ struct RoutineBuilderView: View {
                 CreateRoutineView(routineStorage: routineStorage)
             }
             .onAppear {
-                routineStorage.loadRoutinesFromFirebase()
-                // Also sync any local routines to Firebase
-                routineStorage.syncLocalRoutinesToFirebase()
+                // Authentication state listener will automatically load routines
+                // No need to manually call loadRoutinesFromFirebase() here
             }
         }
     }

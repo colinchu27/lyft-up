@@ -29,9 +29,8 @@ struct WorkoutHistoryView: View {
                 }
             }
             .onAppear {
-                sessionStorage.loadSessionsFromFirebase()
-                // Also sync any local sessions to Firebase
-                sessionStorage.syncLocalSessionsToFirebase()
+                // Authentication state listener will automatically load sessions
+                // No need to manually call loadSessionsFromFirebase() here
             }
         }
     }

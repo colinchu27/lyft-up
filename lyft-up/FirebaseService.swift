@@ -37,6 +37,10 @@ class FirebaseService: ObservableObject {
                     // Load user profile when authenticated
                     Task {
                         await self?.loadUserProfileOnAuth()
+                        // Debug user data to help identify issues
+                        await self?.debugUserData()
+                        // Clean up any global collections
+                        await self?.cleanupGlobalCollections()
                     }
                 } else {
                     self?.userProfile = nil
@@ -209,14 +213,15 @@ class FirebaseService: ObservableObject {
         
         do {
             let sessionData = try sessionToDictionary(session)
+            let path = "users/\(userId)/workoutSessions/\(session.id.uuidString)"
             try await db.collection("users").document(userId)
                 .collection("workoutSessions")
                 .document(session.id.uuidString)
                 .setData(sessionData)
             
-            print("Workout session saved successfully")
+            print("✅ Workout session '\(session.routineName)' saved successfully to: \(path)")
         } catch {
-            print("Error saving workout session: \(error)")
+            print("❌ Error saving workout session '\(session.routineName)': \(error)")
             throw error
         }
     }
@@ -227,6 +232,7 @@ class FirebaseService: ObservableObject {
         }
         
         do {
+            let path = "users/\(userId)/workoutSessions"
             let snapshot = try await db.collection("users").document(userId)
                 .collection("workoutSessions")
                 .order(by: "startTime", descending: true)
@@ -236,10 +242,13 @@ class FirebaseService: ObservableObject {
                 try dictionaryToSession(document.data())
             }
             
-            print("Loaded \(sessions.count) workout sessions")
+            print("💪 Loaded \(sessions.count) workout sessions from: \(path)")
+            for session in sessions {
+                print("   - \(session.routineName) (\(session.startTime.formatted()))")
+            }
             return sessions
         } catch {
-            print("Error loading workout sessions: \(error)")
+            print("❌ Error loading workout sessions: \(error)")
             throw error
         }
     }
@@ -271,14 +280,15 @@ class FirebaseService: ObservableObject {
         
         do {
             let routineData = try routineToDictionary(routine)
+            let path = "users/\(userId)/routines/\(routine.id.uuidString)"
             try await db.collection("users").document(userId)
                 .collection("routines")
                 .document(routine.id.uuidString)
                 .setData(routineData)
             
-            print("Routine saved successfully")
+            print("✅ Routine '\(routine.name)' saved successfully to: \(path)")
         } catch {
-            print("Error saving routine: \(error)")
+            print("❌ Error saving routine '\(routine.name)': \(error)")
             throw error
         }
     }
@@ -289,6 +299,7 @@ class FirebaseService: ObservableObject {
         }
         
         do {
+            let path = "users/\(userId)/routines"
             let snapshot = try await db.collection("users").document(userId)
                 .collection("routines")
                 .order(by: "createdAt", descending: true)
@@ -298,10 +309,13 @@ class FirebaseService: ObservableObject {
                 try dictionaryToRoutine(document.data())
             }
             
-            print("Loaded \(routines.count) routines")
+            print("📋 Loaded \(routines.count) routines from: \(path)")
+            for routine in routines {
+                print("   - \(routine.name)")
+            }
             return routines
         } catch {
-            print("Error loading routines: \(error)")
+            print("❌ Error loading routines: \(error)")
             throw error
         }
     }
@@ -900,6 +914,78 @@ class FirebaseService: ObservableObject {
             }
         } catch {
             print("❌ Error checking all friend requests: \(error)")
+        }
+    }
+    
+    // MARK: - Debugging and Cleanup
+    
+    func debugUserData() async {
+        guard let userId = currentUser?.uid else {
+            print("❌ No authenticated user")
+            return
+        }
+        
+        print("🔍 Debugging data for user: \(userId)")
+        
+        do {
+            // Check user-specific routines
+            let routinesSnapshot = try await db.collection("users").document(userId)
+                .collection("routines")
+                .getDocuments()
+            
+            print("📋 User routines count: \(routinesSnapshot.documents.count)")
+            for doc in routinesSnapshot.documents {
+                print("   - Routine: \(doc.data()["name"] ?? "Unknown") (ID: \(doc.documentID))")
+            }
+            
+            // Check user-specific workout sessions
+            let sessionsSnapshot = try await db.collection("users").document(userId)
+                .collection("workoutSessions")
+                .getDocuments()
+            
+            print("💪 User workout sessions count: \(sessionsSnapshot.documents.count)")
+            for doc in sessionsSnapshot.documents {
+                print("   - Session: \(doc.data()["routineName"] ?? "Unknown") (ID: \(doc.documentID))")
+            }
+            
+            // Check if there are any global collections (should be empty)
+            let globalRoutinesSnapshot = try await db.collection("routines").getDocuments()
+            let globalSessionsSnapshot = try await db.collection("workoutSessions").getDocuments()
+            
+            if !globalRoutinesSnapshot.documents.isEmpty {
+                print("⚠️  WARNING: Found \(globalRoutinesSnapshot.documents.count) routines in global collection!")
+            }
+            
+            if !globalSessionsSnapshot.documents.isEmpty {
+                print("⚠️  WARNING: Found \(globalSessionsSnapshot.documents.count) workout sessions in global collection!")
+            }
+            
+        } catch {
+            print("❌ Error debugging user data: \(error)")
+        }
+    }
+    
+    func cleanupGlobalCollections() async {
+        print("🧹 Cleaning up global collections...")
+        
+        do {
+            // Remove any routines from global collection
+            let globalRoutinesSnapshot = try await db.collection("routines").getDocuments()
+            for doc in globalRoutinesSnapshot.documents {
+                try await doc.reference.delete()
+                print("🗑️  Deleted global routine: \(doc.documentID)")
+            }
+            
+            // Remove any workout sessions from global collection
+            let globalSessionsSnapshot = try await db.collection("workoutSessions").getDocuments()
+            for doc in globalSessionsSnapshot.documents {
+                try await doc.reference.delete()
+                print("🗑️  Deleted global workout session: \(doc.documentID)")
+            }
+            
+            print("✅ Global collections cleanup completed")
+        } catch {
+            print("❌ Error cleaning up global collections: \(error)")
         }
     }
 }

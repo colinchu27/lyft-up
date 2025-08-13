@@ -7,6 +7,7 @@
 
 import Foundation
 import SwiftUI
+import Combine
 
 // MARK: - Workout Statistics Storage Manager
 class WorkoutStatsStorage: ObservableObject {
@@ -14,12 +15,37 @@ class WorkoutStatsStorage: ObservableObject {
     
     @Published var stats: WorkoutStats
     private let userDefaults = UserDefaults.standard
-    private let statsKey = "workoutStats"
     private let firebaseService = FirebaseService.shared
+    private var cancellables = Set<AnyCancellable>()
     
     init() {
         self.stats = WorkoutStats()
-        loadStats()
+        setupAuthStateListener()
+        clearOldGlobalData()
+    }
+    
+    private func setupAuthStateListener() {
+        // Listen to authentication state changes
+        firebaseService.$isAuthenticated
+            .sink { [weak self] isAuthenticated in
+                if isAuthenticated {
+                    // User logged in - load their stats from Firebase
+                    self?.loadFromFirebase()
+                } else {
+                    // User logged out - clear local stats
+                    DispatchQueue.main.async {
+                        self?.stats = WorkoutStats()
+                    }
+                }
+            }
+            .store(in: &cancellables)
+    }
+    
+    // Clear old global UserDefaults data
+    private func clearOldGlobalData() {
+        // Remove old global keys that might still exist
+        userDefaults.removeObject(forKey: "workoutStats")
+        print("Cleared old global workout stats data")
     }
     
     func incrementTotalWorkouts() {
@@ -40,15 +66,26 @@ class WorkoutStatsStorage: ObservableObject {
     }
     
     private func saveStats() {
+        guard let userId = firebaseService.currentUser?.uid else { return }
+        
+        let userSpecificKey = "workoutStats_\(userId)"
         if let encoded = try? JSONEncoder().encode(stats) {
-            userDefaults.set(encoded, forKey: statsKey)
+            userDefaults.set(encoded, forKey: userSpecificKey)
+            print("Saved workout stats to UserDefaults for user: \(userId)")
         }
     }
     
     private func loadStats() {
-        if let data = userDefaults.data(forKey: statsKey),
+        guard let userId = firebaseService.currentUser?.uid else { return }
+        
+        let userSpecificKey = "workoutStats_\(userId)"
+        if let data = userDefaults.data(forKey: userSpecificKey),
            let decoded = try? JSONDecoder().decode(WorkoutStats.self, from: data) {
             stats = decoded
+            print("Loaded workout stats from UserDefaults for user: \(userId)")
+        } else {
+            stats = WorkoutStats()
+            print("No workout stats found in UserDefaults for user: \(userId)")
         }
     }
     
@@ -79,6 +116,7 @@ class WorkoutStatsStorage: ObservableObject {
             stats.totalWeightLifted = userProfile.totalWeightLifted
             stats.lastWorkoutDate = userProfile.lastWorkoutDate
             saveStats()
+            print("Loaded workout stats from Firebase for user: \(userProfile.id)")
         }
     }
 }
@@ -87,11 +125,36 @@ class WorkoutStatsStorage: ObservableObject {
 class WorkoutSessionStorage: ObservableObject {
     @Published var sessions: [WorkoutSession] = []
     private let userDefaults = UserDefaults.standard
-    private let sessionsKey = "savedWorkoutSessions"
     private let firebaseService = FirebaseService.shared
+    private var cancellables = Set<AnyCancellable>()
     
     init() {
-        loadSessions()
+        setupAuthStateListener()
+        clearOldGlobalData()
+    }
+    
+    private func setupAuthStateListener() {
+        // Listen to authentication state changes
+        firebaseService.$isAuthenticated
+            .sink { [weak self] isAuthenticated in
+                if isAuthenticated {
+                    // User logged in - load their sessions from Firebase
+                    self?.loadSessionsFromFirebase()
+                } else {
+                    // User logged out - clear local sessions
+                    DispatchQueue.main.async {
+                        self?.sessions = []
+                    }
+                }
+            }
+            .store(in: &cancellables)
+    }
+    
+    // Clear old global UserDefaults data
+    private func clearOldGlobalData() {
+        // Remove old global keys that might still exist
+        userDefaults.removeObject(forKey: "savedWorkoutSessions")
+        print("Cleared old global workout sessions data")
     }
     
     func saveSession(_ session: WorkoutSession) {
@@ -101,7 +164,7 @@ class WorkoutSessionStorage: ObservableObject {
             sessions.append(session)
         }
         
-        // Save to UserDefaults for offline access
+        // Save to UserDefaults for offline access (user-specific)
         saveToUserDefaults()
         
         // Save to Firebase if user is authenticated
@@ -145,12 +208,12 @@ class WorkoutSessionStorage: ObservableObject {
                     // Also save to UserDefaults for offline access
                     self.saveToUserDefaults()
                 }
-                print("Workout sessions loaded from Firebase successfully")
+                print("Workout sessions loaded from Firebase successfully: \(firebaseSessions.count) sessions")
             } catch {
                 print("Error loading workout sessions from Firebase: \(error)")
                 // Fall back to UserDefaults if Firebase fails
                 await MainActor.run {
-                    self.loadSessions()
+                    self.loadSessionsFromUserDefaults()
                 }
             }
         }
@@ -160,7 +223,7 @@ class WorkoutSessionStorage: ObservableObject {
         guard firebaseService.isAuthenticated else { return }
         
         // Load local sessions first
-        loadSessions()
+        loadSessionsFromUserDefaults()
         
         // Upload each local session to Firebase
         for session in sessions {
@@ -193,15 +256,26 @@ class WorkoutSessionStorage: ObservableObject {
     }
     
     private func saveToUserDefaults() {
+        guard let userId = firebaseService.currentUser?.uid else { return }
+        
+        let userSpecificKey = "savedWorkoutSessions_\(userId)"
         if let encoded = try? JSONEncoder().encode(sessions) {
-            userDefaults.set(encoded, forKey: sessionsKey)
+            userDefaults.set(encoded, forKey: userSpecificKey)
+            print("Saved \(sessions.count) workout sessions to UserDefaults for user: \(userId)")
         }
     }
     
-    private func loadSessions() {
-        if let data = userDefaults.data(forKey: sessionsKey),
+    private func loadSessionsFromUserDefaults() {
+        guard let userId = firebaseService.currentUser?.uid else { return }
+        
+        let userSpecificKey = "savedWorkoutSessions_\(userId)"
+        if let data = userDefaults.data(forKey: userSpecificKey),
            let decoded = try? JSONDecoder().decode([WorkoutSession].self, from: data) {
             sessions = decoded
+            print("Loaded \(sessions.count) workout sessions from UserDefaults for user: \(userId)")
+        } else {
+            sessions = []
+            print("No workout sessions found in UserDefaults for user: \(userId)")
         }
     }
 }
