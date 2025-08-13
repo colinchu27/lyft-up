@@ -690,7 +690,7 @@ struct FriendProfileView: View {
                     // Stats Section
                     HStack(spacing: 40) {
                         StatCard(title: "Workouts", value: "\(friend.totalWorkouts)")
-                        StatCard(title: "Weight Lifted", value: "\(Int(friend.totalWeightLifted))kg")
+                        StatCard(title: "Weight Lifted", value: "\(Int(friend.totalWeightLifted))lbs")
                     }
                     
                     // Fitness Goal
