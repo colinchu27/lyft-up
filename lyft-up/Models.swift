@@ -60,6 +60,26 @@ struct Friend: Codable, Identifiable {
     }
 }
 
+struct FriendRequest: Codable, Identifiable {
+    let id: String
+    let fromUserId: String
+    let toUserId: String
+    let status: String // "pending", "accepted", "rejected"
+    let createdAt: Date
+    let acceptedAt: Date?
+    let rejectedAt: Date?
+    
+    init(id: String, fromUserId: String, toUserId: String, status: String, createdAt: Date, acceptedAt: Date? = nil, rejectedAt: Date? = nil) {
+        self.id = id
+        self.fromUserId = fromUserId
+        self.toUserId = toUserId
+        self.status = status
+        self.createdAt = createdAt
+        self.acceptedAt = acceptedAt
+        self.rejectedAt = rejectedAt
+    }
+}
+
 struct WorkoutHistory: Codable, Identifiable {
     var id = UUID()
     let userId: String

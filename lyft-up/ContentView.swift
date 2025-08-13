@@ -82,12 +82,19 @@ struct ContentView: View {
                 }
                 .tag(1)
 
+            FriendsView()
+                .tabItem {
+                    Image(systemName: "person.2.fill")
+                    Text("Friends")
+                }
+                .tag(2)
+
             ProfileView()
                 .tabItem {
                     Image(systemName: "person.fill")
                     Text("Profile")
                 }
-                .tag(2)
+                .tag(3)
         }
         .environmentObject(firebaseService)
         .accentColor(.lyftRed) // Set tab bar accent color
