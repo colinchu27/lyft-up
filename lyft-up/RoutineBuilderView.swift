@@ -477,6 +477,7 @@ struct RoutineDetailView: View {
     @State private var editedRoutineName = ""
     @State private var editedExercises: [RoutineExercise] = []
     @State private var showingAddExercise = false
+    @State private var showingDeleteAlert = false
     
     var body: some View {
         NavigationView {
@@ -506,10 +507,17 @@ struct RoutineDetailView: View {
                 
                 ToolbarItem(placement: .navigationBarTrailing) {
                     if isEditing {
-                        Button("Save") {
-                            saveChanges()
+                        HStack(spacing: 16) {
+                            Button("Delete") {
+                                showingDeleteAlert = true
+                            }
+                            .foregroundColor(.red)
+                            
+                            Button("Save") {
+                                saveChanges()
+                            }
+                            .disabled(editedRoutineName.isEmpty || editedExercises.isEmpty)
                         }
-                        .disabled(editedRoutineName.isEmpty || editedExercises.isEmpty)
                     } else {
                         Button("Edit") {
                             startEdit()
@@ -522,6 +530,14 @@ struct RoutineDetailView: View {
             AddExerciseView { exercise in
                 editedExercises.append(exercise)
             }
+        }
+        .alert("Delete Routine", isPresented: $showingDeleteAlert) {
+            Button("Cancel", role: .cancel) { }
+            Button("Delete", role: .destructive) {
+                deleteRoutine()
+            }
+        } message: {
+            Text("Are you sure you want to delete '\(routine.name)'? This action cannot be undone.")
         }
     }
     
@@ -649,6 +665,11 @@ struct RoutineDetailView: View {
     
     private func deleteExercises(offsets: IndexSet) {
         editedExercises.remove(atOffsets: offsets)
+    }
+    
+    private func deleteRoutine() {
+        routineStorage.deleteRoutine(routine)
+        dismiss()
     }
 }
 
