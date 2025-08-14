@@ -10,7 +10,7 @@ import SwiftUI
 struct ProgressDashboardView: View {
     @StateObject private var analyticsService = ProgressAnalyticsService.shared
     @State private var selectedTimeRange: TimeRange = .month
-    @State private var selectedMetric: ChartMetric = .workouts
+    @State private var selectedMetric: ChartMetric = .volume
     
     var body: some View {
         NavigationView {
@@ -270,26 +270,88 @@ struct ProgressChartView: View {
     }
     
     private var chartContent: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text(metric.rawValue)
-                .font(.headline)
-                .fontWeight(.semibold)
+        VStack(alignment: .leading, spacing: 12) {
+            HStack {
+                Text(metric.rawValue)
+                    .font(.headline)
+                    .fontWeight(.semibold)
+                
+                Spacer()
+                
+                // Summary stats
+                VStack(alignment: .trailing, spacing: 2) {
+                    Text(summaryValue)
+                        .font(.subheadline)
+                        .fontWeight(.bold)
+                        .foregroundColor(chartColor)
+                    
+                    Text(summaryLabel)
+                        .font(.caption)
+                        .foregroundColor(.lyftTextSecondary)
+                }
+            }
             
-            // Simple bar chart
+            // Bar chart with numerical values
             HStack(alignment: .bottom, spacing: 4) {
                 ForEach(data) { point in
-                    VStack {
+                    VStack(spacing: 4) {
+                        // Numerical value above bar
+                        Text(formatValue(point.value))
+                            .font(.caption)
+                            .fontWeight(.medium)
+                            .foregroundColor(.lyftText)
+                        
+                        // Bar
                         Rectangle()
-                            .fill(Color.lyftRed)
+                            .fill(chartColor)
                             .frame(height: max(20, CGFloat(point.value / maxValue) * 150))
                             .cornerRadius(4)
                         
+                        // Date below bar
                         Text(formatDate(point.date))
                             .font(.caption2)
                             .foregroundColor(.gray)
                     }
                 }
             }
+        }
+    }
+    
+    private var summaryValue: String {
+        switch metric {
+        case .volume:
+            let total = data.reduce(0) { $0 + $1.value }
+            return "\(Int(total)) lbs"
+        case .duration:
+            let average = data.isEmpty ? 0 : data.reduce(0) { $0 + $1.value } / Double(data.count)
+            return "\(Int(average)) min"
+        }
+    }
+    
+    private var summaryLabel: String {
+        switch metric {
+        case .volume:
+            return "Total"
+        case .duration:
+            return "Average"
+        }
+    }
+    
+    private var chartColor: Color {
+        switch metric {
+        case .volume:
+            return .lyftRed
+        case .duration:
+            return .blue
+        }
+    }
+    
+    private func formatValue(_ value: Double) -> String {
+        switch metric {
+        case .volume:
+            return "\(Int(value)) lbs"
+        case .duration:
+            return "\(Int(value)) min"
         }
     }
     

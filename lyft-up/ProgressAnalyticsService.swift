@@ -223,14 +223,10 @@ class ProgressAnalyticsService: ObservableObject {
         let cutoffDate = Calendar.current.date(byAdding: .day, value: -timeRange.days, to: Date()) ?? Date()
         
         switch metric {
-        case .workouts:
-            return weeklyProgress
-                .filter { $0.weekStart >= cutoffDate }
-                .map { ChartDataPoint(date: $0.weekStart, value: Double($0.workouts), label: "Workouts") }
         case .volume:
             return weeklyProgress
                 .filter { $0.weekStart >= cutoffDate }
-                .map { ChartDataPoint(date: $0.weekStart, value: $0.totalVolume, label: "Volume (lbs)") }
+                .map { ChartDataPoint(date: $0.weekStart, value: $0.totalVolume, label: "Total Weight (lbs)") }
         case .duration:
             return weeklyProgress
                 .filter { $0.weekStart >= cutoffDate }
@@ -252,7 +248,6 @@ class ProgressAnalyticsService: ObservableObject {
 }
 
 enum ChartMetric: String, CaseIterable {
-    case workouts = "Workouts"
     case volume = "Volume"
     case duration = "Duration"
 }
