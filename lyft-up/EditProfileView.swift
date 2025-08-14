@@ -218,7 +218,10 @@ struct EditProfileView: View {
             friendIds: currentProfile.friendIds,
             createdAt: currentProfile.createdAt,
             fitnessGoal: fitnessGoal.trimmingCharacters(in: .whitespacesAndNewlines),
-            isGoalPublic: isGoalPublic
+            isGoalPublic: isGoalPublic,
+            totalWorkouts: currentProfile.totalWorkouts,
+            totalWeightLifted: currentProfile.totalWeightLifted,
+            lastWorkoutDate: currentProfile.lastWorkoutDate
         )
         
         Task {
