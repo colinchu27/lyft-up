@@ -32,21 +32,13 @@ struct FriendsView: View {
             .navigationBarTitleDisplayMode(.large)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
-                    HStack(spacing: 8) {
-                        HStack(spacing: 4) {
-                            Circle()
-                                .fill(isFirebaseConnected ? Color.green : Color.red)
-                                .frame(width: 8, height: 8)
-                            Text(isFirebaseConnected ? "Connected" : "Offline")
-                                .font(.system(size: 12))
-                                .foregroundColor(.lyftText.opacity(0.6))
-                        }
-                        
-                        Button("Debug") {
-                            debugAllRequests()
-                        }
-                        .font(.system(size: 10))
-                        .foregroundColor(.lyftRed)
+                    HStack(spacing: 4) {
+                        Circle()
+                            .fill(isFirebaseConnected ? Color.green : Color.red)
+                            .frame(width: 8, height: 8)
+                        Text(isFirebaseConnected ? "Connected" : "Offline")
+                            .font(.system(size: 12))
+                            .foregroundColor(.lyftText.opacity(0.6))
                     }
                 }
                 
@@ -243,12 +235,6 @@ struct FriendsView: View {
             await MainActor.run {
                 self.isFirebaseConnected = isConnected
             }
-        }
-    }
-    
-    private func debugAllRequests() {
-        Task {
-            await firebaseService.debugAllFriendRequests()
         }
     }
 }

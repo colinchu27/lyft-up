@@ -75,7 +75,7 @@ struct ProfileView: View {
                                     }
                                     
                                     VStack(alignment: .leading, spacing: 4) {
-                                        Text("Total Workouts")
+                                        Text("Workouts Completed")
                                             .font(.system(size: 14, weight: .medium))
                                             .foregroundColor(.lyftTextSecondary)
                                         Text("\(statsStorage.stats.totalWorkouts)")
