@@ -303,6 +303,10 @@ class FirebaseService: ObservableObject {
             throw FirebaseError.userNotAuthenticated
         }
         
+        return try await loadRoutinesForUser(userId)
+    }
+    
+    func loadRoutinesForUser(_ userId: String) async throws -> [Routine] {
         do {
             let path = "users/\(userId)/routines"
             let snapshot = try await db.collection("users").document(userId)
@@ -314,13 +318,13 @@ class FirebaseService: ObservableObject {
                 try dictionaryToRoutine(document.data())
             }
             
-            print("📋 Loaded \(routines.count) routines from: \(path)")
+            print("📋 Loaded \(routines.count) routines for user \(userId) from: \(path)")
             for routine in routines {
                 print("   - \(routine.name)")
             }
             return routines
         } catch {
-            print("❌ Error loading routines: \(error)")
+            print("❌ Error loading routines for user \(userId): \(error)")
             throw error
         }
     }
