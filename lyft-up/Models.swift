@@ -188,3 +188,76 @@ struct WorkoutStats: Codable {
 extension Notification.Name {
     static let friendListUpdated = Notification.Name("friendListUpdated")
 }
+
+// MARK: - Progress Tracking Models
+struct ExerciseProgress: Codable, Identifiable {
+    let id = UUID()
+    let exerciseName: String
+    let date: Date
+    let maxWeight: Double
+    let maxReps: Int
+    let totalVolume: Double
+    let sets: Int
+    
+    init(exerciseName: String, date: Date, maxWeight: Double, maxReps: Int, totalVolume: Double, sets: Int) {
+        self.exerciseName = exerciseName
+        self.date = date
+        self.maxWeight = maxWeight
+        self.maxReps = maxReps
+        self.totalVolume = totalVolume
+        self.sets = sets
+    }
+}
+
+struct ProgressMetrics: Codable {
+    var weeklyWorkouts: Int
+    var monthlyWorkouts: Int
+    var streakDays: Int
+    var averageWorkoutDuration: TimeInterval
+    var totalVolumeThisWeek: Double
+    var totalVolumeThisMonth: Double
+    var totalWorkouts: Int
+    var exerciseProgress: [ExerciseProgress]
+    
+    init() {
+        self.weeklyWorkouts = 0
+        self.monthlyWorkouts = 0
+        self.streakDays = 0
+        self.averageWorkoutDuration = 0
+        self.totalVolumeThisWeek = 0
+        self.totalVolumeThisMonth = 0
+        self.totalWorkouts = 0
+        self.exerciseProgress = []
+    }
+}
+
+enum TimeRange: String, CaseIterable {
+    case week = "Week"
+    case month = "Month"
+    case threeMonths = "3 Months"
+    case year = "Year"
+    
+    var days: Int {
+        switch self {
+        case .week: return 7
+        case .month: return 30
+        case .threeMonths: return 90
+        case .year: return 365
+        }
+    }
+}
+
+struct ChartDataPoint: Identifiable {
+    let id = UUID()
+    let date: Date
+    let value: Double
+    let label: String
+}
+
+struct WeeklyProgress: Identifiable {
+    let id = UUID()
+    let weekStart: Date
+    let workouts: Int
+    let totalVolume: Double
+    let averageDuration: TimeInterval
+}

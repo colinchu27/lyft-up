@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct WorkoutHistoryView: View {
-    @StateObject private var sessionStorage = WorkoutSessionStorage()
+    @StateObject private var sessionStorage = WorkoutSessionStorage.shared
     @State private var selectedSession: WorkoutSession?
     @State private var showingSessionDetail = false
     

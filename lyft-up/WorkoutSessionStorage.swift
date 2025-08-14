@@ -123,6 +123,8 @@ class WorkoutStatsStorage: ObservableObject {
 
 // MARK: - Workout Session Storage Manager
 class WorkoutSessionStorage: ObservableObject {
+    static let shared = WorkoutSessionStorage()
+    
     @Published var sessions: [WorkoutSession] = []
     private let userDefaults = UserDefaults.standard
     private let firebaseService = FirebaseService.shared
@@ -158,11 +160,17 @@ class WorkoutSessionStorage: ObservableObject {
     }
     
     func saveSession(_ session: WorkoutSession) {
+        print("WorkoutSessionStorage: Saving session '\(session.routineName)' with \(session.exercises.count) exercises")
+        
         if let index = sessions.firstIndex(where: { $0.id == session.id }) {
             sessions[index] = session
+            print("WorkoutSessionStorage: Updated existing session")
         } else {
             sessions.append(session)
+            print("WorkoutSessionStorage: Added new session")
         }
+        
+        print("WorkoutSessionStorage: Total sessions now: \(sessions.count)")
         
         // Save to UserDefaults for offline access (user-specific)
         saveToUserDefaults()

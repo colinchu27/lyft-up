@@ -116,6 +116,9 @@ struct lyft_upApp: App {
                     } else {
                         print("Firebase configuration failed")
                     }
+                    
+                    // Initialize progress analytics service
+                    _ = ProgressAnalyticsService.shared
                 }
                 .preferredColorScheme(.light) // Force light mode for consistent white background
         }

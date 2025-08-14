@@ -9,7 +9,7 @@ import SwiftUI
 
 struct WorkoutSessionView: View {
     let routine: Routine
-    @StateObject private var sessionStorage = WorkoutSessionStorage()
+    @StateObject private var sessionStorage = WorkoutSessionStorage.shared
     @StateObject private var statsStorage = WorkoutStatsStorage.shared
     @Environment(\.dismiss) private var dismiss
     

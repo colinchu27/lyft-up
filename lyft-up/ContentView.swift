@@ -9,7 +9,7 @@ import SwiftUI
 
 struct ContentView: View {
     @StateObject private var workoutStorage = WorkoutStorage()
-    @StateObject private var sessionStorage = WorkoutSessionStorage()
+    @StateObject private var sessionStorage = WorkoutSessionStorage.shared
     @StateObject private var firebaseService = FirebaseService.shared
     @State private var isLoading = true
     @State private var selectedTab = 0
@@ -89,12 +89,19 @@ struct ContentView: View {
                 }
                 .tag(2)
 
+            ProgressDashboardView()
+                .tabItem {
+                    Image(systemName: "chart.line.uptrend.xyaxis")
+                    Text("Progress")
+                }
+                .tag(3)
+
             ProfileView()
                 .tabItem {
                     Image(systemName: "person.fill")
                     Text("Profile")
                 }
-                .tag(3)
+                .tag(4)
         }
         .environmentObject(firebaseService)
         .accentColor(.lyftRed) // Set tab bar accent color
