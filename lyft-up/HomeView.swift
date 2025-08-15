@@ -89,7 +89,7 @@ struct HomeView: View {
                         .font(.system(size: 16))
                         .foregroundColor(.lyftRed.opacity(0.6))
                     
-                    Text("Every workout is progress. Keep pushing!")
+                    Text(dailyMotivationalQuote)
                         .font(.system(size: 14, weight: .medium))
                         .foregroundColor(.lyftTextSecondary)
                         .italic()
@@ -307,6 +307,25 @@ struct HomeView: View {
             // For smaller weights, show full number
             return "\(formatter.string(from: NSNumber(value: weight)) ?? "0") lbs"
         }
+    }
+    
+    // MARK: - Motivational Quotes
+    private let motivationalQuotes = [
+        "Every workout is progress. Keep pushing!",
+        "Strength doesn't come from what you can do. It comes from overcoming the things you once thought you couldn't.",
+        "The only bad workout is the one that didn't happen.",
+        "Your body can stand almost anything. It's your mind you have to convince.",
+        "Make yourself proud. Every rep counts."
+    ]
+    
+    private var dailyMotivationalQuote: String {
+        let calendar = Calendar.current
+        let today = Date()
+        let dayOfYear = calendar.ordinality(of: .day, in: .year, for: today) ?? 1
+        
+        // Use the day of year to select a quote (ensures same quote all day)
+        let quoteIndex = (dayOfYear - 1) % motivationalQuotes.count
+        return motivationalQuotes[quoteIndex]
     }
 }
 
