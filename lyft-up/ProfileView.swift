@@ -9,7 +9,7 @@ import SwiftUI
 
 struct ProfileView: View {
     @StateObject private var firebaseService = FirebaseService.shared
-    @StateObject private var statsStorage = WorkoutStatsStorage.shared
+    @StateObject private var analyticsService = ProgressAnalyticsService.shared
     @State private var showingWorkoutHistory = false
     @State private var showingSignOutAlert = false
     @State private var showingEditProfile = false
@@ -78,7 +78,7 @@ struct ProfileView: View {
                                         Text("Workouts Completed")
                                             .font(.system(size: 14, weight: .medium))
                                             .foregroundColor(.lyftTextSecondary)
-                                        Text("\(statsStorage.stats.totalWorkouts)")
+                                        Text("\(analyticsService.progressMetrics.totalWorkouts)")
                                             .font(.system(size: 18, weight: .bold))
                                             .foregroundColor(.lyftText)
                                     }
@@ -102,7 +102,7 @@ struct ProfileView: View {
                                         Text("Total Weight Lifted")
                                             .font(.system(size: 14, weight: .medium))
                                             .foregroundColor(.lyftTextSecondary)
-                                        Text("\(Int(statsStorage.stats.totalWeightLifted)) lbs")
+                                        Text("\(Int(analyticsService.getTotalVolume())) lbs")
                                             .font(.system(size: 18, weight: .bold))
                                             .foregroundColor(.lyftText)
                                     }
@@ -303,10 +303,10 @@ struct ProfileView: View {
                     Task {
                         await firebaseService.refreshUserProfile()
                     }
-                } else {
-                    // Load workout stats from Firebase user profile
-                    statsStorage.loadFromFirebase()
                 }
+                
+                // Force reload from Firebase to ensure stats are up to date
+                analyticsService.reloadFromFirebase()
                 
                 // Load friend count
                 loadFriendCount()

@@ -245,6 +245,24 @@ class ProgressAnalyticsService: ObservableObject {
         
         return (weight: maxWeightRecord.maxWeight, reps: maxWeightRecord.maxReps, date: maxWeightRecord.date)
     }
+    
+    // Get total volume across all time
+    func getTotalVolume() -> Double {
+        let completedSessions = sessionStorage.sessions.filter { $0.isCompleted }
+        return completedSessions.reduce(0.0) { total, session in
+            total + session.exercises.reduce(0.0) { exerciseTotal, exercise in
+                exerciseTotal + exercise.sets.reduce(0.0) { setTotal, set in
+                    setTotal + (set.weight * Double(set.reps))
+                }
+            }
+        }
+    }
+    
+    // Get last workout date
+    func getLastWorkoutDate() -> Date? {
+        let completedSessions = sessionStorage.sessions.filter { $0.isCompleted }
+        return completedSessions.max(by: { $0.startTime < $1.startTime })?.startTime
+    }
 }
 
 enum ChartMetric: String, CaseIterable {
