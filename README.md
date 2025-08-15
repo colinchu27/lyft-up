@@ -1,4 +1,4 @@
-# Lyft-Up 🚀  (In Progress)
+# Lyft-Up 🚀
 **Track your lifts. Follow your friends. Stay accountable.**
 
 ---
@@ -14,13 +14,51 @@ This is my **first iOS app** built from scratch using SwiftUI. It's a personal p
 
 ---
 
-## 🔧 Core Features (So Far)
+## 🔧 Core Features
 
+### 🏋️ Workout Tracking
 ✅ Create custom workout routines  
-✅ Log sets, reps, and weights  
+✅ Log sets, reps, and weights with real-time tracking  
 ✅ View past performance during workouts  
 ✅ Auto-load last session data for each exercise  
-✅ Designed for fast, intuitive gym use
+✅ Workout session management with start/end times  
+✅ Add/remove exercises during active sessions  
+✅ Designed for fast, intuitive gym use  
+
+### 👥 Social Features
+✅ User authentication with email/password  
+✅ User profiles with customizable bios and fitness goals  
+✅ Friend system with search and add functionality  
+✅ Friend request management (send, accept, reject)  
+✅ View friend's workout history and progress  
+✅ Real-time connection status indicator  
+✅ Privacy controls for fitness goals  
+
+### 📊 Progress Analytics
+✅ Comprehensive progress dashboard  
+✅ Weekly, monthly, and custom time range tracking  
+✅ Multiple metrics: volume, duration
+✅ Interactive progress charts  
+✅ Exercise-specific progress tracking  
+✅ Workout streaks and consistency metrics  
+✅ Achievement system with badges  
+✅ Total weight lifted and workout statistics  
+
+### 📈 Data Management
+✅ Complete workout history with detailed session views  
+✅ Cloud synchronization with Firebase  
+✅ Local data persistence for offline access  
+✅ Automatic data backup and recovery  
+✅ User profile management and editing  
+✅ Routine storage and management  
+
+### 🎯 User Experience
+✅ Onboarding flow for new users  
+✅ Clean, modern UI with custom design system  
+✅ Tab-based navigation for easy access  
+✅ Loading states and error handling  
+✅ Responsive design for different screen sizes  
+✅ Intuitive workout flow from routine to completion  
 
 ---
 
@@ -36,9 +74,24 @@ Most gym apps either feel too bloated or too isolated. They don't help you stay 
 
 ## 🧱 Tech Stack
 
-- SwiftUI (UI)
-- Xcode
-- MVVM architecture (as project scales)
-- Firebase (Authentication & Firestore)
-- Local data persistence (UserDefaults)
-- iOS Simulator for dev/testing
+### Frontend & UI
+- **SwiftUI** - Modern declarative UI framework
+- **Xcode** - iOS development environment
+- **MVVM Architecture** - Clean separation of concerns
+- **Combine** - Reactive programming for data flow
+
+### Backend & Data
+- **Firebase Authentication** - Secure user management
+- **Firestore** - NoSQL cloud database
+- **Firebase Security Rules** - Data protection
+- **UserDefaults** - Local data persistence
+
+### Development & Testing
+- **iOS Simulator** - Development and testing
+- **Git** - Version control
+- **Swift Package Manager** - Dependency management
+
+### Key Libraries & Services
+- **Firebase iOS SDK** - Backend services integration
+- **Combine** - Reactive programming framework
+- **SwiftUI Charts** - Data visualization
