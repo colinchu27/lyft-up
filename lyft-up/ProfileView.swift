@@ -9,7 +9,7 @@ import SwiftUI
 
 struct ProfileView: View {
     @StateObject private var firebaseService = FirebaseService.shared
-    @StateObject private var analyticsService = ProgressAnalyticsService.shared
+    @StateObject private var statsStorage = WorkoutStatsStorage.shared
     @State private var showingWorkoutHistory = false
     @State private var showingSignOutAlert = false
     @State private var showingEditProfile = false
@@ -78,7 +78,7 @@ struct ProfileView: View {
                                         Text("Workouts Completed")
                                             .font(.system(size: 14, weight: .medium))
                                             .foregroundColor(.lyftTextSecondary)
-                                        Text("\(analyticsService.progressMetrics.totalWorkouts)")
+                                        Text("\(statsStorage.stats.totalWorkouts)")
                                             .font(.system(size: 18, weight: .bold))
                                             .foregroundColor(.lyftText)
                                     }
@@ -102,7 +102,7 @@ struct ProfileView: View {
                                         Text("Total Weight Lifted")
                                             .font(.system(size: 14, weight: .medium))
                                             .foregroundColor(.lyftTextSecondary)
-                                        Text("\(Int(analyticsService.getTotalVolume())) lbs")
+                                        Text("\(Int(statsStorage.stats.totalWeightLifted)) lbs")
                                             .font(.system(size: 18, weight: .bold))
                                             .foregroundColor(.lyftText)
                                     }
@@ -305,8 +305,8 @@ struct ProfileView: View {
                     }
                 }
                 
-                // Force reload from Firebase to ensure stats are up to date
-                analyticsService.reloadFromFirebase()
+                // Recalculate stats from sessions to ensure consistency
+                statsStorage.recalculateStatsFromSessions()
                 
                 // Load friend count
                 loadFriendCount()

@@ -119,6 +119,25 @@ class WorkoutStatsStorage: ObservableObject {
             print("Loaded workout stats from Firebase for user: \(userProfile.id)")
         }
     }
+    
+    // Recalculate stats from actual workout sessions to ensure consistency
+    func recalculateStatsFromSessions() {
+        let completedSessions = WorkoutSessionStorage.shared.sessions.filter { $0.isCompleted }
+        
+        stats.totalWorkouts = completedSessions.count
+        stats.totalWeightLifted = completedSessions.reduce(0.0) { total, session in
+            total + session.exercises.reduce(0.0) { exerciseTotal, exercise in
+                exerciseTotal + exercise.sets.reduce(0.0) { setTotal, set in
+                    setTotal + (set.weight * Double(set.reps))
+                }
+            }
+        }
+        stats.lastWorkoutDate = completedSessions.max(by: { $0.startTime < $1.startTime })?.startTime
+        
+        saveStats()
+        syncToFirebase()
+        print("Recalculated stats from sessions: \(stats.totalWorkouts) workouts, \(stats.totalWeightLifted) lbs")
+    }
 }
 
 // MARK: - Workout Session Storage Manager

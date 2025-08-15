@@ -11,6 +11,7 @@ struct WorkoutSessionView: View {
     let routine: Routine
     @StateObject private var sessionStorage = WorkoutSessionStorage.shared
     @StateObject private var statsStorage = WorkoutStatsStorage.shared
+    @StateObject private var firebaseService = FirebaseService.shared
     @Environment(\.dismiss) private var dismiss
     
     @State private var currentSession: WorkoutSession
@@ -222,14 +223,15 @@ struct WorkoutSessionView: View {
             }
         }
         
-        // Increment total workouts counter and add weight lifted
-        statsStorage.incrementTotalWorkouts()
-        statsStorage.addWeightLifted(sessionTotalWeight)
+        // Recalculate stats from all completed sessions to ensure consistency
+        statsStorage.recalculateStatsFromSessions()
         
         // Store completed session and show summary
         completedSession = session
         showingSummary = true
     }
+    
+
 }
 
 struct WorkoutExerciseCard: View {

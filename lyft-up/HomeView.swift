@@ -9,7 +9,7 @@ import SwiftUI
 
 struct HomeView: View {
     @StateObject private var firebaseService = FirebaseService.shared
-    @StateObject private var analyticsService = ProgressAnalyticsService.shared
+    @StateObject private var statsStorage = WorkoutStatsStorage.shared
     @Binding var selectedTab: Int
     
     var body: some View {
@@ -40,15 +40,15 @@ struct HomeView: View {
                     .padding(.top, 20)
                 }
                 .refreshable {
-                    analyticsService.reloadFromFirebase()
+                    statsStorage.recalculateStatsFromSessions()
                 }
             }
             .onAppear {
                 Task {
                     await firebaseService.refreshUserProfile()
                 }
-                // Force reload from Firebase to ensure stats are up to date
-                analyticsService.reloadFromFirebase()
+                // Recalculate stats from sessions to ensure consistency
+                statsStorage.recalculateStatsFromSessions()
             }
         }
     }
@@ -133,14 +133,14 @@ struct HomeView: View {
                 HomeStatCard(
                     icon: "flame.fill",
                     title: "Workouts",
-                    value: "\(analyticsService.progressMetrics.totalWorkouts)",
+                    value: "\(statsStorage.stats.totalWorkouts)",
                     color: .lyftRed
                 )
                 
                 HomeStatCard(
                     icon: "dumbbell.fill",
                     title: "Total Weight",
-                    value: formatWeight(analyticsService.getTotalVolume()),
+                    value: formatWeight(statsStorage.stats.totalWeightLifted),
                     color: .orange
                 )
                 
@@ -350,7 +350,7 @@ struct HomeStatCard: View {
 }
 
 struct LastWorkoutCard: View {
-    @StateObject private var analyticsService = ProgressAnalyticsService.shared
+    @StateObject private var statsStorage = WorkoutStatsStorage.shared
     
     var body: some View {
         VStack(spacing: 12) {
@@ -365,14 +365,14 @@ struct LastWorkoutCard: View {
             }
             
             VStack(spacing: 4) {
-                if let lastWorkout = analyticsService.getLastWorkoutInfo() {
-                    Text(formatLastWorkoutDate(lastWorkout.date))
+                if let lastWorkoutDate = statsStorage.stats.lastWorkoutDate {
+                    Text(formatLastWorkoutDate(lastWorkoutDate))
                         .font(.system(size: 14, weight: .bold))
                         .foregroundColor(.lyftText)
                         .lineLimit(1)
                         .minimumScaleFactor(0.8)
                     
-                    Text(lastWorkout.title)
+                    Text("Last workout")
                         .font(.system(size: 11, weight: .medium))
                         .foregroundColor(.lyftTextSecondary)
                         .lineLimit(1)
