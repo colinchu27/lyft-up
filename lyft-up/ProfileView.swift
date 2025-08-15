@@ -305,8 +305,8 @@ struct ProfileView: View {
                     }
                 }
                 
-                // Recalculate stats from sessions to ensure consistency
-                statsStorage.recalculateStatsFromSessions()
+                // Load workout stats from Firebase user profile
+                statsStorage.loadFromFirebase()
                 
                 // Load friend count
                 loadFriendCount()

@@ -29,6 +29,7 @@ class ProgressAnalyticsService: ObservableObject {
         sessionStorage.$sessions
             .sink { [weak self] sessions in
                 print("ProgressAnalytics: Session storage updated with \(sessions.count) sessions")
+                print("ProgressAnalytics: Sessions: \(sessions.map { "\($0.routineName) - \($0.isCompleted)" })")
                 self?.calculateProgress(from: sessions)
             }
             .store(in: &cancellables)
@@ -61,6 +62,11 @@ class ProgressAnalyticsService: ObservableObject {
         
         print("ProgressAnalytics: Updated metrics - Weekly: \(progressMetrics.weeklyWorkouts), Monthly: \(progressMetrics.monthlyWorkouts), Total: \(progressMetrics.totalWorkouts)")
         print("ProgressAnalytics: Volume this week: \(progressMetrics.totalVolumeThisWeek), this month: \(progressMetrics.totalVolumeThisMonth)")
+        
+        // Debug: Print session details
+        for (index, session) in completedSessions.enumerated() {
+            print("Session \(index + 1): \(session.routineName) - \(session.startTime) - Completed: \(session.isCompleted)")
+        }
     }
     
     // Manual trigger for testing
@@ -73,7 +79,22 @@ class ProgressAnalyticsService: ObservableObject {
     // Force reload from Firebase
     func reloadFromFirebase() {
         print("ProgressAnalytics: Forcing reload from Firebase")
-        sessionStorage.loadSessionsFromFirebase()
+        
+        Task {
+            // Try loading multiple times to handle Firebase consistency
+            for attempt in 1...3 {
+                print("ProgressAnalytics: Loading attempt \(attempt)")
+                await sessionStorage.loadSessionsFromFirebaseAsync()
+                
+                // Wait a moment for Firebase consistency
+                try? await Task.sleep(nanoseconds: 500_000_000) // 0.5 seconds
+            }
+            
+            await MainActor.run {
+                print("ProgressAnalytics: Final recalculation with \(self.sessionStorage.sessions.count) sessions")
+                self.calculateProgress(from: self.sessionStorage.sessions)
+            }
+        }
     }
     
     // Get chart data for the dashboard

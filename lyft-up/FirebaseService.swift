@@ -240,7 +240,6 @@ class FirebaseService: ObservableObject {
             let snapshot = try await db.collection("users").document(userId)
                 .collection("workoutSessions")
                 .order(by: "startTime", descending: true)
-                .limit(to: 10) // Limit to recent 10 workouts
                 .getDocuments()
             
             let sessions = try snapshot.documents.compactMap { document in

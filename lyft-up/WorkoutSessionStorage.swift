@@ -49,14 +49,18 @@ class WorkoutStatsStorage: ObservableObject {
     }
     
     func incrementTotalWorkouts() {
+        let oldValue = stats.totalWorkouts
         stats.totalWorkouts += 1
         stats.lastWorkoutDate = Date()
+        print("Incrementing workouts: \(oldValue) -> \(stats.totalWorkouts)")
         saveStats()
         syncToFirebase()
     }
     
     func addWeightLifted(_ weight: Double) {
+        let oldValue = stats.totalWeightLifted
         stats.totalWeightLifted += weight
+        print("Adding weight: \(oldValue) + \(weight) = \(stats.totalWeightLifted)")
         saveStats()
         syncToFirebase()
     }
@@ -112,31 +116,57 @@ class WorkoutStatsStorage: ObservableObject {
     // Load stats from Firebase user profile
     func loadFromFirebase() {
         if let userProfile = firebaseService.userProfile {
+            let oldWorkouts = stats.totalWorkouts
+            let oldWeight = stats.totalWeightLifted
+            
             stats.totalWorkouts = userProfile.totalWorkouts
             stats.totalWeightLifted = userProfile.totalWeightLifted
             stats.lastWorkoutDate = userProfile.lastWorkoutDate
+            
+            print("Loading from Firebase - Workouts: \(oldWorkouts) -> \(stats.totalWorkouts), Weight: \(oldWeight) -> \(stats.totalWeightLifted)")
+            
             saveStats()
             print("Loaded workout stats from Firebase for user: \(userProfile.id)")
+        } else {
+            print("No user profile found when trying to load from Firebase")
         }
     }
     
     // Recalculate stats from actual workout sessions to ensure consistency
     func recalculateStatsFromSessions() {
+        Task {
+            await recalculateStatsFromSessionsAsync()
+        }
+    }
+    
+    private func recalculateStatsFromSessionsAsync() async {
+        // First, ensure sessions are loaded from Firebase
+        await WorkoutSessionStorage.shared.loadSessionsFromFirebaseAsync()
+        
         let completedSessions = WorkoutSessionStorage.shared.sessions.filter { $0.isCompleted }
         
-        stats.totalWorkouts = completedSessions.count
-        stats.totalWeightLifted = completedSessions.reduce(0.0) { total, session in
+        print("Recalculating stats - Found \(completedSessions.count) completed sessions out of \(WorkoutSessionStorage.shared.sessions.count) total sessions")
+        
+        let newTotalWorkouts = completedSessions.count
+        let newTotalWeight = completedSessions.reduce(0.0) { total, session in
             total + session.exercises.reduce(0.0) { exerciseTotal, exercise in
                 exerciseTotal + exercise.sets.reduce(0.0) { setTotal, set in
                     setTotal + (set.weight * Double(set.reps))
                 }
             }
         }
-        stats.lastWorkoutDate = completedSessions.max(by: { $0.startTime < $1.startTime })?.startTime
+        let newLastWorkoutDate = completedSessions.max(by: { $0.startTime < $1.startTime })?.startTime
         
-        saveStats()
-        syncToFirebase()
-        print("Recalculated stats from sessions: \(stats.totalWorkouts) workouts, \(stats.totalWeightLifted) lbs")
+        await MainActor.run {
+            stats.totalWorkouts = newTotalWorkouts
+            stats.totalWeightLifted = newTotalWeight
+            stats.lastWorkoutDate = newLastWorkoutDate
+            
+            print("Recalculated stats: \(stats.totalWorkouts) workouts, \(stats.totalWeightLifted) lbs")
+            
+            saveStats()
+            syncToFirebase()
+        }
     }
 }
 
@@ -180,6 +210,7 @@ class WorkoutSessionStorage: ObservableObject {
     
     func saveSession(_ session: WorkoutSession) {
         print("WorkoutSessionStorage: Saving session '\(session.routineName)' with \(session.exercises.count) exercises")
+        print("WorkoutSessionStorage: Session completed: \(session.isCompleted)")
         
         if let index = sessions.firstIndex(where: { $0.id == session.id }) {
             sessions[index] = session
@@ -190,6 +221,7 @@ class WorkoutSessionStorage: ObservableObject {
         }
         
         print("WorkoutSessionStorage: Total sessions now: \(sessions.count)")
+        print("WorkoutSessionStorage: Completed sessions: \(sessions.filter { $0.isCompleted }.count)")
         
         // Save to UserDefaults for offline access (user-specific)
         saveToUserDefaults()
@@ -200,6 +232,11 @@ class WorkoutSessionStorage: ObservableObject {
                 do {
                     try await firebaseService.saveWorkoutSession(session)
                     print("Workout session saved to Firebase successfully")
+                    print("Firebase save - Session: \(session.routineName), Completed: \(session.isCompleted), ID: \(session.id)")
+                    
+                    // Wait a moment for Firebase consistency, then reload sessions
+                    try await Task.sleep(nanoseconds: 1_000_000_000) // 1 second
+                    await loadSessionsFromFirebaseAsync()
                 } catch {
                     print("Error saving workout session to Firebase: \(error)")
                 }
@@ -228,20 +265,27 @@ class WorkoutSessionStorage: ObservableObject {
         guard firebaseService.isAuthenticated else { return }
         
         Task {
-            do {
-                let firebaseSessions = try await firebaseService.loadWorkoutSessions()
-                await MainActor.run {
-                    self.sessions = firebaseSessions
-                    // Also save to UserDefaults for offline access
-                    self.saveToUserDefaults()
-                }
-                print("Workout sessions loaded from Firebase successfully: \(firebaseSessions.count) sessions")
-            } catch {
-                print("Error loading workout sessions from Firebase: \(error)")
-                // Fall back to UserDefaults if Firebase fails
-                await MainActor.run {
-                    self.loadSessionsFromUserDefaults()
-                }
+            await loadSessionsFromFirebaseAsync()
+        }
+    }
+    
+    func loadSessionsFromFirebaseAsync() async {
+        guard firebaseService.isAuthenticated else { return }
+        
+        do {
+            let firebaseSessions = try await firebaseService.loadWorkoutSessions()
+            await MainActor.run {
+                self.sessions = firebaseSessions
+                // Also save to UserDefaults for offline access
+                self.saveToUserDefaults()
+            }
+            print("Workout sessions loaded from Firebase successfully: \(firebaseSessions.count) sessions")
+            print("Firebase load - Sessions: \(firebaseSessions.map { "\($0.routineName) - \($0.isCompleted)" })")
+        } catch {
+            print("Error loading workout sessions from Firebase: \(error)")
+            // Fall back to UserDefaults if Firebase fails
+            await MainActor.run {
+                self.loadSessionsFromUserDefaults()
             }
         }
     }

@@ -223,8 +223,9 @@ struct WorkoutSessionView: View {
             }
         }
         
-        // Recalculate stats from all completed sessions to ensure consistency
-        statsStorage.recalculateStatsFromSessions()
+        // Increment total workouts counter and add weight lifted
+        statsStorage.incrementTotalWorkouts()
+        statsStorage.addWeightLifted(sessionTotalWeight)
         
         // Store completed session and show summary
         completedSession = session

@@ -40,15 +40,15 @@ struct HomeView: View {
                     .padding(.top, 20)
                 }
                 .refreshable {
-                    statsStorage.recalculateStatsFromSessions()
+                    statsStorage.loadFromFirebase()
                 }
             }
             .onAppear {
                 Task {
                     await firebaseService.refreshUserProfile()
                 }
-                // Recalculate stats from sessions to ensure consistency
-                statsStorage.recalculateStatsFromSessions()
+                // Load workout stats from Firebase user profile
+                statsStorage.loadFromFirebase()
             }
         }
     }
