@@ -263,6 +263,15 @@ class ProgressAnalyticsService: ObservableObject {
         let completedSessions = sessionStorage.sessions.filter { $0.isCompleted }
         return completedSessions.max(by: { $0.startTime < $1.startTime })?.startTime
     }
+    
+    // Get last workout info (date and title)
+    func getLastWorkoutInfo() -> (date: Date, title: String)? {
+        let completedSessions = sessionStorage.sessions.filter { $0.isCompleted }
+        guard let lastSession = completedSessions.max(by: { $0.startTime < $1.startTime }) else {
+            return nil
+        }
+        return (date: lastSession.startTime, title: lastSession.routineName)
+    }
 }
 
 enum ChartMetric: String, CaseIterable {

@@ -140,16 +140,11 @@ struct HomeView: View {
                 HomeStatCard(
                     icon: "dumbbell.fill",
                     title: "Total Weight",
-                    value: "\(Int(analyticsService.getTotalVolume()))lbs",
+                    value: formatWeight(analyticsService.getTotalVolume()),
                     color: .orange
                 )
                 
-                HomeStatCard(
-                    icon: "calendar",
-                    title: "Last Workout",
-                    value: analyticsService.getLastWorkoutDate() != nil ? "Recent" : "None",
-                    color: .blue
-                )
+                LastWorkoutCard()
             }
         }
     }
@@ -297,6 +292,22 @@ struct HomeView: View {
         }
         return "User"
     }
+    
+    private func formatWeight(_ weight: Double) -> String {
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .decimal
+        formatter.maximumFractionDigits = 0
+        
+        if weight >= 1000 {
+            // For weights over 1000, show in K format (e.g., "24.4K lbs")
+            let kiloWeight = weight / 1000
+            formatter.maximumFractionDigits = 1
+            return "\(formatter.string(from: NSNumber(value: kiloWeight)) ?? "0")K lbs"
+        } else {
+            // For smaller weights, show full number
+            return "\(formatter.string(from: NSNumber(value: weight)) ?? "0") lbs"
+        }
+    }
 }
 
 // MARK: - Supporting Views
@@ -320,18 +331,89 @@ struct HomeStatCard: View {
             
             VStack(spacing: 4) {
                 Text(value)
-                    .font(.system(size: 18, weight: .bold))
+                    .font(.system(size: 16, weight: .bold))
                     .foregroundColor(.lyftText)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.8)
                 
                 Text(title)
                     .font(.system(size: 12, weight: .medium))
                     .foregroundColor(.lyftTextSecondary)
+                    .lineLimit(1)
             }
         }
         .padding(16)
         .background(Color.white)
         .cornerRadius(16)
         .shadow(color: Color.black.opacity(0.05), radius: 8, x: 0, y: 2)
+    }
+}
+
+struct LastWorkoutCard: View {
+    @StateObject private var analyticsService = ProgressAnalyticsService.shared
+    
+    var body: some View {
+        VStack(spacing: 12) {
+            ZStack {
+                Circle()
+                    .fill(Color.blue.opacity(0.15))
+                    .frame(width: 50, height: 50)
+                
+                Image(systemName: "calendar")
+                    .font(.system(size: 20))
+                    .foregroundColor(.blue)
+            }
+            
+            VStack(spacing: 4) {
+                if let lastWorkout = analyticsService.getLastWorkoutInfo() {
+                    Text(formatLastWorkoutDate(lastWorkout.date))
+                        .font(.system(size: 14, weight: .bold))
+                        .foregroundColor(.lyftText)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.8)
+                    
+                    Text(lastWorkout.title)
+                        .font(.system(size: 11, weight: .medium))
+                        .foregroundColor(.lyftTextSecondary)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.8)
+                } else {
+                    Text("No workouts")
+                        .font(.system(size: 14, weight: .bold))
+                        .foregroundColor(.lyftText)
+                        .lineLimit(1)
+                    
+                    Text("Start your journey")
+                        .font(.system(size: 11, weight: .medium))
+                        .foregroundColor(.lyftTextSecondary)
+                        .lineLimit(1)
+                }
+            }
+        }
+        .padding(16)
+        .background(Color.white)
+        .cornerRadius(16)
+        .shadow(color: Color.black.opacity(0.05), radius: 8, x: 0, y: 2)
+    }
+    
+    private func formatLastWorkoutDate(_ date: Date) -> String {
+        let calendar = Calendar.current
+        let now = Date()
+        
+        if calendar.isDate(date, inSameDayAs: now) {
+            return "Today"
+        } else if calendar.isDate(date, inSameDayAs: calendar.date(byAdding: .day, value: -1, to: now) ?? now) {
+            return "Yesterday"
+        } else {
+            let days = calendar.dateComponents([.day], from: date, to: now).day ?? 0
+            if days < 7 {
+                return "\(days) days ago"
+            } else {
+                let formatter = DateFormatter()
+                formatter.dateStyle = .short
+                return formatter.string(from: date)
+            }
+        }
     }
 }
 
