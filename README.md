@@ -17,48 +17,78 @@ This is my **first iOS app** built from scratch using SwiftUI. It's a personal p
 ## 🔧 Core Features
 
 ### 🏋️ Workout Tracking
-✅ Create custom workout routines  
-✅ Log sets, reps, and weights with real-time tracking  
-✅ View past performance during workouts  
-✅ Auto-load last session data for each exercise  
-✅ Workout session management with start/end times  
-✅ Add/remove exercises during active sessions  
-✅ Designed for fast, intuitive gym use  
+
+Built for speed and simplicity in the gym:
+
+• Create fully custom workout routines tailored to your training style.
+
+• Log sets, reps, and weights with real-time tracking.
+
+• Instantly view past performance while you train.
+
+• Auto-load your last session's data for each exercise.
+
+• Manage workout sessions with clear start/end times.
+
+• Add or remove exercises mid-session without losing progress.
 
 ### 👥 Social Features
-✅ User authentication with email/password  
-✅ User profiles with customizable bios and fitness goals  
-✅ Friend system with search and add functionality  
-✅ Friend request management (send, accept, reject)  
-✅ View friend's workout history and progress  
-✅ Real-time connection status indicator  
-✅ Privacy controls for fitness goals  
+
+Stay connected and motivated:
+
+• Secure email/password authentication.
+
+• Personal profiles with bios and fitness goals.
+
+• Friend system with search, add, and request management.
+
+• View your friends' workout history and progress.
+
+• Real-time connection status indicators.
+
+• Privacy controls for your goals and progress visibility.
 
 ### 📊 Progress Analytics
-✅ Comprehensive progress dashboard  
-✅ Weekly, monthly, and custom time range tracking  
-✅ Multiple metrics: volume, duration
-✅ Interactive progress charts  
-✅ Exercise-specific progress tracking  
-✅ Workout streaks and consistency metrics  
-✅ Achievement system with badges  
-✅ Total weight lifted and workout statistics  
+
+Track every lift, every milestone:
+
+• Interactive dashboard with weekly, monthly, and custom date ranges.
+
+• Track metrics like volume, duration, and consistency.
+
+• Monitor progress for individual exercises.
+
+• Maintain streaks and unlock achievement badges.
+
+• See total weight lifted and detailed workout stats.
 
 ### 📈 Data Management
-✅ Complete workout history with detailed session views  
-✅ Cloud synchronization with Firebase  
-✅ Local data persistence for offline access  
-✅ Automatic data backup and recovery  
-✅ User profile management and editing  
-✅ Routine storage and management  
+
+Your training data, always safe and accessible:
+
+• Complete workout history with detailed session breakdowns.
+
+• Cloud sync via Firebase with local offline storage.
+
+• Automatic backups and easy recovery.
+
+• Edit and manage your profile anytime.
+
+• Store, update, and reuse your favorite routines.
 
 ### 🎯 User Experience
-✅ Onboarding flow for new users  
-✅ Clean, modern UI with custom design system  
-✅ Tab-based navigation for easy access  
-✅ Loading states and error handling  
-✅ Responsive design for different screen sizes  
-✅ Intuitive workout flow from routine to completion  
+
+Designed for a smooth, modern feel:
+
+• Guided onboarding flow for new users.
+
+• Clean, responsive UI that adapts to all screen sizes.
+
+• Tab-based navigation for quick access to core features.
+
+• Clear loading states and error handling.
+
+• Streamlined workout flow from routine creation to session completion.  
 
 ---
 
