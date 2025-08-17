@@ -11,6 +11,7 @@ struct ProfileView: View {
     @StateObject private var firebaseService = FirebaseService.shared
     @StateObject private var statsStorage = WorkoutStatsStorage.shared
     @StateObject private var analyticsService = ProgressAnalyticsService.shared
+
     @State private var showingWorkoutHistory = false
     @State private var showingSignOutAlert = false
     @State private var showingEditProfile = false
@@ -262,6 +263,8 @@ struct ProfileView: View {
                         }
                         .buttonStyle(PlainButtonStyle())
                         .padding(.horizontal, 20)
+                        
+
                         
                         Spacer(minLength: 20)
                     }
