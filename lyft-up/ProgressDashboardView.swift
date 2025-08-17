@@ -63,6 +63,10 @@ struct ProgressDashboardView: View {
                     icon: "flame.fill",
                     color: .lyftRed
                 )
+                .onAppear {
+                    print("ProgressView - Weekly workouts: \(analyticsService.progressMetrics.weeklyWorkouts)")
+                    print("ProgressView - Total workouts: \(analyticsService.progressMetrics.totalWorkouts)")
+                }
                 
                 // Monthly Workouts
                 ProgressStatCard(

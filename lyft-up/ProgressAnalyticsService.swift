@@ -61,7 +61,8 @@ class ProgressAnalyticsService: ObservableObject {
         exerciseProgress = Dictionary(grouping: progressMetrics.exerciseProgress) { $0.exerciseName }
         
         print("ProgressAnalytics: Updated metrics - Weekly: \(progressMetrics.weeklyWorkouts), Monthly: \(progressMetrics.monthlyWorkouts), Total: \(progressMetrics.totalWorkouts)")
-        print("ProgressAnalytics: Volume this week: \(progressMetrics.totalVolumeThisWeek), this month: \(progressMetrics.totalVolumeThisMonth)")
+        print("ProgressAnalytics: Volume this week: \(progressMetrics.totalVolumeThisMonth), this month: \(progressMetrics.totalVolumeThisMonth)")
+        print("ProgressAnalytics: Total completed sessions: \(completedSessions.count)")
         
         // Debug: Print session details
         for (index, session) in completedSessions.enumerated() {
@@ -98,17 +99,41 @@ class ProgressAnalyticsService: ObservableObject {
     }
     
     // Get chart data for the dashboard
-    func getChartData(for timeRange: TimeRange, metric: ChartMetric) -> [WeeklyProgress] {
-        switch timeRange {
-        case .week:
-            return Array(weeklyProgress.suffix(7))
-        case .month:
-            return Array(weeklyProgress.suffix(30))
-        case .threeMonths:
-            return Array(weeklyProgress.suffix(90))
-        case .year:
-            return weeklyProgress
+    func getChartData(for timeRange: TimeRange, metric: ChartMetric) -> [ChartDataPoint] {
+        let cutoffDate = Calendar.current.date(byAdding: .day, value: -timeRange.days, to: Date()) ?? Date()
+        let completedSessions = sessionStorage.sessions.filter { $0.isCompleted && $0.startTime >= cutoffDate }
+        
+        // Group sessions by date (like in WorkoutHistoryView)
+        let groupedSessions = Dictionary(grouping: completedSessions) { session in
+            Calendar.current.startOfDay(for: session.startTime)
         }
+        
+        // Convert to chart data points
+        let chartData = groupedSessions.map { date, sessions in
+            let totalVolume = sessions.reduce(0.0) { total, session in
+                total + session.exercises.reduce(0.0) { exerciseTotal, exercise in
+                    exerciseTotal + exercise.sets.reduce(0.0) { setTotal, set in
+                        setTotal + (set.weight * Double(set.reps))
+                    }
+                }
+            }
+            
+            let totalDuration = sessions.reduce(0.0) { total, session in
+                guard let endTime = session.endTime else { return total }
+                return total + endTime.timeIntervalSince(session.startTime)
+            }
+            
+            let averageDuration = sessions.isEmpty ? 0 : totalDuration / Double(sessions.count)
+            
+            switch metric {
+            case .volume:
+                return ChartDataPoint(date: date, value: totalVolume, label: "Total Weight (lbs)")
+            case .duration:
+                return ChartDataPoint(date: date, value: averageDuration / 60, label: "Duration (min)")
+            }
+        }
+        
+        return chartData.sorted { $0.date < $1.date }
     }
     
     private func getWorkoutsInTimeRange(_ sessions: [WorkoutSession], days: Int) -> Int {
@@ -240,20 +265,7 @@ class ProgressAnalyticsService: ObservableObject {
         }.sorted { $0.date < $1.date }
     }
     
-    func getChartData(for timeRange: TimeRange, metric: ChartMetric) -> [ChartDataPoint] {
-        let cutoffDate = Calendar.current.date(byAdding: .day, value: -timeRange.days, to: Date()) ?? Date()
-        
-        switch metric {
-        case .volume:
-            return weeklyProgress
-                .filter { $0.weekStart >= cutoffDate }
-                .map { ChartDataPoint(date: $0.weekStart, value: $0.totalVolume, label: "Total Weight (lbs)") }
-        case .duration:
-            return weeklyProgress
-                .filter { $0.weekStart >= cutoffDate }
-                .map { ChartDataPoint(date: $0.weekStart, value: $0.averageDuration / 60, label: "Duration (min)") }
-        }
-    }
+
     
     func getPersonalRecord(for exerciseName: String) -> (weight: Double, reps: Int, date: Date)? {
         let exerciseData = progressMetrics.exerciseProgress.filter { 

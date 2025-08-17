@@ -10,6 +10,7 @@ import SwiftUI
 struct HomeView: View {
     @StateObject private var firebaseService = FirebaseService.shared
     @StateObject private var statsStorage = WorkoutStatsStorage.shared
+    @StateObject private var analyticsService = ProgressAnalyticsService.shared
     @Binding var selectedTab: Int
     
     var body: some View {
@@ -40,15 +41,15 @@ struct HomeView: View {
                     .padding(.top, 20)
                 }
                 .refreshable {
-                    statsStorage.loadFromFirebase()
+                    analyticsService.reloadFromFirebase()
                 }
             }
             .onAppear {
                 Task {
                     await firebaseService.refreshUserProfile()
                 }
-                // Load workout stats from Firebase user profile
-                statsStorage.loadFromFirebase()
+                // Force reload from Firebase to ensure stats are up to date
+                analyticsService.reloadFromFirebase()
             }
         }
     }
@@ -133,14 +134,17 @@ struct HomeView: View {
                 HomeStatCard(
                     icon: "flame.fill",
                     title: "Workouts",
-                    value: "\(statsStorage.stats.totalWorkouts)",
+                    value: "\(analyticsService.progressMetrics.totalWorkouts)",
                     color: .lyftRed
                 )
+                .onAppear {
+                    print("HomeView - ProgressAnalytics total: \(analyticsService.progressMetrics.totalWorkouts)")
+                }
                 
                 HomeStatCard(
                     icon: "dumbbell.fill",
                     title: "Total Weight",
-                    value: formatWeight(statsStorage.stats.totalWeightLifted),
+                    value: formatWeight(analyticsService.getTotalVolume()),
                     color: .orange
                 )
                 
