@@ -254,7 +254,7 @@ struct ExerciseProgressView: View {
                 .cornerRadius(12)
                 .shadow(color: .black.opacity(0.05), radius: 5, x: 0, y: 2)
             } else {
-                ExerciseProgressChart(data: progressData)
+                ExerciseProgressChart(data: progressData, timeRange: selectedTimeRange)
                     .frame(height: 200)
                     .padding()
                     .background(Color.white)
@@ -329,41 +329,193 @@ struct ExerciseSelectorButton: View {
 
 struct ExerciseProgressChart: View {
     let data: [ExerciseProgress]
+    let timeRange: TimeRange
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text("Max Weight Progress")
-                .font(.headline)
-                .fontWeight(.semibold)
+        VStack(alignment: .leading, spacing: 12) {
+            HStack {
+                Text("Max Weight Progress")
+                    .font(.headline)
+                    .fontWeight(.semibold)
+                
+                Spacer()
+                
+                Text("\(Int(maxWeight)) lbs max")
+                    .font(.caption)
+                    .foregroundColor(.lyftTextSecondary)
+            }
             
-            // Simple line chart
-            HStack(alignment: .bottom, spacing: 8) {
-                ForEach(data) { progress in
-                    VStack {
-                        Rectangle()
-                            .fill(Color.lyftRed)
-                            .frame(height: max(20, CGFloat(progress.maxWeight / maxWeight) * 150))
-                            .cornerRadius(4)
+            if aggregatedData.isEmpty {
+                VStack(spacing: 8) {
+                    Image(systemName: "chart.line.uptrend.xyaxis")
+                        .font(.system(size: 30))
+                        .foregroundColor(.gray.opacity(0.5))
+                    
+                    Text("No data for this time range")
+                        .font(.caption)
+                        .foregroundColor(.gray)
+                }
+                .frame(height: 120)
+                .frame(maxWidth: .infinity)
+            } else {
+                // Chart area
+                VStack(spacing: 8) {
+                    // Y-axis labels
+                    HStack {
+                        VStack(alignment: .leading, spacing: 0) {
+                            ForEach(yAxisLabels, id: \.self) { label in
+                                Text(label)
+                                    .font(.caption2)
+                                    .foregroundColor(.gray)
+                                    .frame(height: 20)
+                            }
+                        }
+                        .frame(width: 40)
                         
-                        Text(formatDate(progress.date))
-                            .font(.caption2)
-                            .foregroundColor(.gray)
+                        // Chart bars
+                        HStack(alignment: .bottom, spacing: chartSpacing) {
+                            ForEach(Array(aggregatedData.enumerated()), id: \.offset) { index, item in
+                                VStack(spacing: 4) {
+                                    // Bar
+                                    Rectangle()
+                                        .fill(Color.lyftRed.opacity(0.8))
+                                        .frame(height: max(4, CGFloat(item.value / maxWeight) * 100))
+                                        .cornerRadius(2)
+                                        .overlay(
+                                            // Value label on hover
+                                            Text("\(Int(item.value))")
+                                                .font(.caption2)
+                                                .foregroundColor(.white)
+                                                .fontWeight(.medium)
+                                                .opacity(item.value > 0 ? 1 : 0)
+                                        )
+                                    
+                                    // X-axis label
+                                    Text(item.label)
+                                        .font(.caption2)
+                                        .foregroundColor(.gray)
+                                        .rotationEffect(.degrees(-45))
+                                        .offset(y: 8)
+                                }
+                            }
+                        }
+                        .frame(maxWidth: .infinity)
                     }
                 }
+                .frame(height: 140)
             }
         }
     }
     
-    private var maxWeight: Double {
-        data.map { $0.maxWeight }.max() ?? 1
+    private var aggregatedData: [ChartDataPoint] {
+        switch timeRange {
+        case .week:
+            return aggregateByDay(data)
+        case .month:
+            return aggregateByWeek(data)
+        case .threeMonths:
+            return aggregateByWeek(data)
+        }
     }
     
-    private func formatDate(_ date: Date) -> String {
+    private var maxWeight: Double {
+        aggregatedData.map { $0.value }.max() ?? 1
+    }
+    
+    private var yAxisLabels: [String] {
+        let max = maxWeight
+        let step = max / 4
+        return (0...4).map { i in
+            "\(Int(max - (step * Double(i))))"
+        }
+    }
+    
+    private var chartSpacing: CGFloat {
+        switch timeRange {
+        case .week:
+            return 4
+        case .month:
+            return 2
+        case .threeMonths:
+            return 1
+        }
+    }
+    
+    private func aggregateByDay(_ data: [ExerciseProgress]) -> [ChartDataPoint] {
+        let calendar = Calendar.current
+        let today = Date()
+        var dailyData: [Date: Double] = [:]
+        
+        // Initialize last 7 days
+        for i in 0..<7 {
+            if let date = calendar.date(byAdding: .day, value: -i, to: today) {
+                let startOfDay = calendar.startOfDay(for: date)
+                dailyData[startOfDay] = 0
+            }
+        }
+        
+        // Fill in actual data
+        for progress in data {
+            let startOfDay = calendar.startOfDay(for: progress.date)
+            if dailyData[startOfDay] != nil {
+                dailyData[startOfDay] = max(dailyData[startOfDay] ?? 0, progress.maxWeight)
+            }
+        }
+        
+        return dailyData.sorted { $0.key < $1.key }.map { date, weight in
+            ChartDataPoint(
+                date: date,
+                value: weight,
+                label: formatDayLabel(date)
+            )
+        }
+    }
+    
+    private func aggregateByWeek(_ data: [ExerciseProgress]) -> [ChartDataPoint] {
+        let calendar = Calendar.current
+        let cutoffDate = calendar.date(byAdding: .day, value: -30, to: Date()) ?? Date()
+        
+        // Group workouts by the actual workout date (not week boundaries)
+        var workoutDates: [Date: Double] = [:]
+        
+        for progress in data {
+            if progress.date >= cutoffDate {
+                let workoutDate = calendar.startOfDay(for: progress.date)
+                workoutDates[workoutDate] = max(workoutDates[workoutDate] ?? 0, progress.maxWeight)
+            }
+        }
+        
+        // Sort by date and take the most recent workouts
+        let sortedWorkouts = workoutDates.sorted { $0.key < $1.key }
+        let recentWorkouts = Array(sortedWorkouts.suffix(4)) // Show last 4 workout dates
+        
+        return recentWorkouts.map { date, weight in
+            ChartDataPoint(
+                date: date,
+                value: weight,
+                label: formatWeekLabel(date)
+            )
+        }
+    }
+    
+
+    
+    private func formatDayLabel(_ date: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "E"
+        return formatter.string(from: date)
+    }
+    
+    private func formatWeekLabel(_ date: Date) -> String {
         let formatter = DateFormatter()
         formatter.dateFormat = "MMM dd"
         return formatter.string(from: date)
     }
+    
+
 }
+
+
 
 struct ExerciseSessionRow: View {
     let progress: ExerciseProgress

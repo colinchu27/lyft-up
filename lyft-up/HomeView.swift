@@ -303,7 +303,6 @@ struct HomeView: View {
         formatter.maximumFractionDigits = 0
         
         if weight >= 1000 {
-            // For weights over 1000, show in K format (e.g., "24.4K lbs")
             let kiloWeight = weight / 1000
             formatter.maximumFractionDigits = 1
             return "\(formatter.string(from: NSNumber(value: kiloWeight)) ?? "0")K lbs"
