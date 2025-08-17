@@ -10,16 +10,18 @@
 <td>
 
 ### 🏋️ Workout Tracking
-- Custom routines  
+- Custom routines with exercise management  
 - Real-time set/reps/weight logging  
-- View past performance  
+- Workout sessions with start/end tracking  
 - Auto-load last session data  
+- Add/remove exercises mid-workout  
 
 ### 📊 Progress Analytics
-- Interactive dashboard  
+- Interactive dashboard with charts  
 - Track volume, duration, streaks  
-- Exercise-specific metrics  
-- Achievement badges  
+- Exercise-specific progress tracking  
+- Weekly/monthly progress views  
+- Achievement badges and milestones  
 
 </td>
 <td>
@@ -31,10 +33,11 @@
 - Privacy controls  
 
 ### 📈 Data Management
-- Complete workout history  
+- Complete workout history with session details  
 - Cloud sync + offline mode  
 - Automatic backups  
 - Routine storage and editing  
+- Workout summaries and analytics  
 
 </td>
 </tr>
@@ -69,6 +72,7 @@ This is my **first iOS app** built from scratch using **SwiftUI**. It's a person
 - Auto-load your last session’s data for each exercise  
 - Manage workout sessions with clear start/end times  
 - Add or remove exercises mid-session without losing progress  
+- Post-workout summaries with detailed analytics  
 
 ---
 
@@ -90,6 +94,7 @@ This is my **first iOS app** built from scratch using **SwiftUI**. It's a person
 - Monitor progress for individual exercises  
 - Maintain streaks and unlock achievement badges  
 - See total weight lifted and detailed workout stats  
+- Exercise-specific progress tracking and trends  
 
 ---
 
@@ -100,6 +105,7 @@ This is my **first iOS app** built from scratch using **SwiftUI**. It's a person
 - Automatic backups and easy recovery  
 - Edit and manage your profile anytime  
 - Store, update, and reuse your favorite routines  
+- Comprehensive workout session management  
 
 ---
 
@@ -110,6 +116,7 @@ This is my **first iOS app** built from scratch using **SwiftUI**. It's a person
 - Tab-based navigation for quick access to core features  
 - Clear loading states and error handling  
 - Streamlined workout flow from routine creation to session completion  
+- Pull-to-refresh for real-time data updates  
 
 </details>
 
