@@ -44,16 +44,6 @@ struct HomeView: View {
                     analyticsService.reloadFromFirebase()
                     // Also trigger Firebase sync when user pulls to refresh
                     WorkoutStatsStorage.shared.recalculateStatsFromSessions()
-                    
-                    // Force Firebase stats recalculation to ensure profile is updated
-                    Task {
-                        do {
-                            try await firebaseService.recalculateAndUpdateUserStats()
-                            print("✅ Firebase profile updated successfully (refresh)")
-                        } catch {
-                            print("❌ Error updating Firebase profile (refresh): \(error)")
-                        }
-                    }
                 }
             }
             .onAppear {
@@ -65,16 +55,6 @@ struct HomeView: View {
                 
                 // Also trigger stats recalculation to ensure Firebase is updated
                 WorkoutStatsStorage.shared.recalculateStatsFromSessions()
-                
-                // Force Firebase stats recalculation to ensure profile is updated
-                Task {
-                    do {
-                        try await firebaseService.recalculateAndUpdateUserStats()
-                        print("✅ Firebase profile updated successfully")
-                    } catch {
-                        print("❌ Error updating Firebase profile: \(error)")
-                    }
-                }
             }
         }
     }
