@@ -42,6 +42,18 @@ struct HomeView: View {
                 }
                 .refreshable {
                     analyticsService.reloadFromFirebase()
+                    // Also trigger Firebase sync when user pulls to refresh
+                    WorkoutStatsStorage.shared.recalculateStatsFromSessions()
+                    
+                    // Force Firebase stats recalculation to ensure profile is updated
+                    Task {
+                        do {
+                            try await firebaseService.recalculateAndUpdateUserStats()
+                            print("✅ Firebase profile updated successfully (refresh)")
+                        } catch {
+                            print("❌ Error updating Firebase profile (refresh): \(error)")
+                        }
+                    }
                 }
             }
             .onAppear {
@@ -50,6 +62,19 @@ struct HomeView: View {
                 }
                 // Force reload from Firebase to ensure stats are up to date
                 analyticsService.reloadFromFirebase()
+                
+                // Also trigger stats recalculation to ensure Firebase is updated
+                WorkoutStatsStorage.shared.recalculateStatsFromSessions()
+                
+                // Force Firebase stats recalculation to ensure profile is updated
+                Task {
+                    do {
+                        try await firebaseService.recalculateAndUpdateUserStats()
+                        print("✅ Firebase profile updated successfully")
+                    } catch {
+                        print("❌ Error updating Firebase profile: \(error)")
+                    }
+                }
             }
         }
     }
@@ -139,6 +164,7 @@ struct HomeView: View {
                 )
                 .onAppear {
                     print("HomeView - ProgressAnalytics total: \(analyticsService.progressMetrics.totalWorkouts)")
+                    print("HomeView - Firebase userProfile total: \(firebaseService.userProfile?.totalWorkouts ?? 0)")
                 }
                 
                 HomeStatCard(
@@ -147,6 +173,10 @@ struct HomeView: View {
                     value: formatWeight(analyticsService.getTotalVolume()),
                     color: .orange
                 )
+                .onAppear {
+                    print("HomeView - ProgressAnalytics total weight: \(analyticsService.getTotalVolume())")
+                    print("HomeView - Firebase userProfile total weight: \(firebaseService.userProfile?.totalWeightLifted ?? 0)")
+                }
                 
                 LastWorkoutCard()
             }

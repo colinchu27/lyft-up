@@ -68,6 +68,9 @@ class ProgressAnalyticsService: ObservableObject {
         for (index, session) in completedSessions.enumerated() {
             print("Session \(index + 1): \(session.routineName) - \(session.startTime) - Completed: \(session.isCompleted)")
         }
+        
+        // Sync calculated stats to Firebase
+        syncStatsToFirebase(completedSessions: completedSessions)
     }
     
     // Manual trigger for testing
@@ -304,6 +307,47 @@ class ProgressAnalyticsService: ObservableObject {
             return nil
         }
         return (date: lastSession.startTime, title: lastSession.routineName)
+    }
+    
+    // Sync calculated stats to Firebase
+    private func syncStatsToFirebase(completedSessions: [WorkoutSession]) {
+        Task {
+            do {
+                let firebaseService = FirebaseService.shared
+                
+                // Calculate total weight lifted
+                let totalWeightLifted = completedSessions.reduce(0.0) { total, session in
+                    total + session.exercises.reduce(0.0) { exerciseTotal, exercise in
+                        exerciseTotal + exercise.sets.reduce(0.0) { setTotal, set in
+                            setTotal + (set.weight * Double(set.reps))
+                        }
+                    }
+                }
+                
+                let lastWorkoutDate = completedSessions.max(by: { $0.startTime < $1.startTime })?.startTime
+                
+                print("ProgressAnalytics: Syncing to Firebase - Workouts: \(completedSessions.count), Weight: \(totalWeightLifted) lbs")
+                
+                // Update user profile with calculated stats
+                if var userProfile = firebaseService.userProfile {
+                    userProfile.totalWorkouts = completedSessions.count
+                    userProfile.totalWeightLifted = totalWeightLifted
+                    userProfile.lastWorkoutDate = lastWorkoutDate
+                    
+                    try await firebaseService.saveUserProfile(userProfile)
+                    
+                    await MainActor.run {
+                        firebaseService.userProfile = userProfile
+                    }
+                    
+                    print("ProgressAnalytics: Successfully synced stats to Firebase")
+                } else {
+                    print("ProgressAnalytics: No user profile found to sync stats")
+                }
+            } catch {
+                print("ProgressAnalytics: Error syncing stats to Firebase: \(error)")
+            }
+        }
     }
 }
 

@@ -909,6 +909,60 @@ class FirebaseService: ObservableObject {
         }
     }
     
+    // MARK: - Stats Recalculation
+    
+    func recalculateAndUpdateUserStats() async throws {
+        guard let userId = currentUser?.uid else {
+            throw FirebaseError.userNotAuthenticated
+        }
+        
+        print("🔄 Recalculating user stats for user: \(userId)")
+        
+        do {
+            // Load all workout sessions from Firebase
+            let sessions = try await loadWorkoutSessionsForUser(userId)
+            let completedSessions = sessions.filter { $0.isCompleted }
+            
+            print("📊 Found \(completedSessions.count) completed sessions out of \(sessions.count) total sessions")
+            
+            // Calculate total workouts and weight
+            let totalWorkouts = completedSessions.count
+            let totalWeightLifted = completedSessions.reduce(0.0) { total, session in
+                total + session.exercises.reduce(0.0) { exerciseTotal, exercise in
+                    exerciseTotal + exercise.sets.reduce(0.0) { setTotal, set in
+                        setTotal + (set.weight * Double(set.reps))
+                    }
+                }
+            }
+            let lastWorkoutDate = completedSessions.max(by: { $0.startTime < $1.startTime })?.startTime
+            
+            print("📈 Calculated stats: \(totalWorkouts) workouts, \(totalWeightLifted) lbs")
+            
+            // Update user profile with correct stats
+            if var userProfile = userProfile {
+                userProfile.totalWorkouts = totalWorkouts
+                userProfile.totalWeightLifted = totalWeightLifted
+                userProfile.lastWorkoutDate = lastWorkoutDate
+                
+                try await saveUserProfile(userProfile)
+                
+                await MainActor.run {
+                    self.userProfile = userProfile
+                }
+                
+                print("✅ Successfully updated user profile with correct stats")
+                print("   - Total Workouts: \(totalWorkouts)")
+                print("   - Total Weight: \(totalWeightLifted) lbs")
+                print("   - Last Workout: \(lastWorkoutDate?.formatted() ?? "None")")
+            } else {
+                print("❌ No user profile found to update")
+            }
+        } catch {
+            print("❌ Error recalculating user stats: \(error)")
+            throw error
+        }
+    }
+    
     // Debug function to check all friend requests
     func debugAllFriendRequests() async {
         do {

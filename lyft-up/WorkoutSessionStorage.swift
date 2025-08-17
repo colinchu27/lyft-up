@@ -49,24 +49,19 @@ class WorkoutStatsStorage: ObservableObject {
     }
     
     func incrementTotalWorkouts() {
-        let oldValue = stats.totalWorkouts
-        stats.totalWorkouts += 1
-        stats.lastWorkoutDate = Date()
-        print("Incrementing workouts: \(oldValue) -> \(stats.totalWorkouts)")
-        saveStats()
-        syncToFirebase()
+        // Instead of incrementing a counter, recalculate from actual sessions
+        recalculateStatsFromSessions()
     }
     
     func addWeightLifted(_ weight: Double) {
-        let oldValue = stats.totalWeightLifted
-        stats.totalWeightLifted += weight
-        print("Adding weight: \(oldValue) + \(weight) = \(stats.totalWeightLifted)")
-        saveStats()
-        syncToFirebase()
+        // Instead of adding to a counter, recalculate from actual sessions
+        recalculateStatsFromSessions()
     }
     
     func getTotalWorkouts() -> Int {
-        return stats.totalWorkouts
+        // Always calculate from actual sessions
+        let completedSessions = WorkoutSessionStorage.shared.sessions.filter { $0.isCompleted }
+        return completedSessions.count
     }
     
     private func saveStats() {
@@ -97,9 +92,23 @@ class WorkoutStatsStorage: ObservableObject {
         Task {
             do {
                 if var userProfile = firebaseService.userProfile {
-                    userProfile.totalWorkouts = stats.totalWorkouts
-                    userProfile.totalWeightLifted = stats.totalWeightLifted
-                    userProfile.lastWorkoutDate = stats.lastWorkoutDate
+                    // Always calculate stats from actual sessions
+                    let completedSessions = WorkoutSessionStorage.shared.sessions.filter { $0.isCompleted }
+                    let totalWorkouts = completedSessions.count
+                    let totalWeightLifted = completedSessions.reduce(0.0) { total, session in
+                        total + session.exercises.reduce(0.0) { exerciseTotal, exercise in
+                            exerciseTotal + exercise.sets.reduce(0.0) { setTotal, set in
+                                setTotal + (set.weight * Double(set.reps))
+                            }
+                        }
+                    }
+                    let lastWorkoutDate = completedSessions.max(by: { $0.startTime < $1.startTime })?.startTime
+                    
+                    userProfile.totalWorkouts = totalWorkouts
+                    userProfile.totalWeightLifted = totalWeightLifted
+                    userProfile.lastWorkoutDate = lastWorkoutDate
+                    
+                    print("Syncing to Firebase - Workouts: \(totalWorkouts), Weight: \(totalWeightLifted) lbs")
                     
                     try await firebaseService.saveUserProfile(userProfile)
                     
@@ -115,21 +124,8 @@ class WorkoutStatsStorage: ObservableObject {
     
     // Load stats from Firebase user profile
     func loadFromFirebase() {
-        if let userProfile = firebaseService.userProfile {
-            let oldWorkouts = stats.totalWorkouts
-            let oldWeight = stats.totalWeightLifted
-            
-            stats.totalWorkouts = userProfile.totalWorkouts
-            stats.totalWeightLifted = userProfile.totalWeightLifted
-            stats.lastWorkoutDate = userProfile.lastWorkoutDate
-            
-            print("Loading from Firebase - Workouts: \(oldWorkouts) -> \(stats.totalWorkouts), Weight: \(oldWeight) -> \(stats.totalWeightLifted)")
-            
-            saveStats()
-            print("Loaded workout stats from Firebase for user: \(userProfile.id)")
-        } else {
-            print("No user profile found when trying to load from Firebase")
-        }
+        // Always recalculate from actual sessions instead of trusting stored values
+        recalculateStatsFromSessions()
     }
     
     // Recalculate stats from actual workout sessions to ensure consistency
@@ -165,6 +161,7 @@ class WorkoutStatsStorage: ObservableObject {
             print("Recalculated stats: \(stats.totalWorkouts) workouts, \(stats.totalWeightLifted) lbs")
             
             saveStats()
+            // Force sync to Firebase to ensure consistency
             syncToFirebase()
         }
     }
@@ -237,6 +234,9 @@ class WorkoutSessionStorage: ObservableObject {
                     // Wait a moment for Firebase consistency, then reload sessions
                     try await Task.sleep(nanoseconds: 1_000_000_000) // 1 second
                     await loadSessionsFromFirebaseAsync()
+                    
+                    // Trigger stats recalculation after saving session
+                    WorkoutStatsStorage.shared.recalculateStatsFromSessions()
                 } catch {
                     print("Error saving workout session to Firebase: \(error)")
                 }

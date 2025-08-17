@@ -16,6 +16,7 @@ struct ProfileView: View {
     @State private var showingEditProfile = false
     @State private var friendCount = 0
     @State private var isLoadingFriends = false
+    @State private var isRecalculatingStats = false
     
     var body: some View {
         NavigationView {
@@ -198,6 +199,26 @@ struct ProfileView: View {
                                 }
                             }
                             
+                            // Stats Recalculation Button (Debug/Utility)
+                            Button(action: {
+                                Task {
+                                    await recalculateStats()
+                                }
+                            }) {
+                                HStack {
+                                    Image(systemName: "arrow.clockwise")
+                                        .font(.system(size: 14))
+                                    Text(isRecalculatingStats ? "Recalculating..." : "Fix Firebase Stats")
+                                        .font(.system(size: 14, weight: .medium))
+                                }
+                                .foregroundColor(.white)
+                                .padding(.horizontal, 16)
+                                .padding(.vertical, 8)
+                                .background(isRecalculatingStats ? Color.gray : Color.lyftRed)
+                                .cornerRadius(8)
+                            }
+                            .disabled(isRecalculatingStats)
+                            
                             Text("Track your progress and review past workouts")
                                 .font(.system(size: 14, weight: .medium))
                                 .foregroundColor(.lyftTextSecondary)
@@ -374,6 +395,27 @@ struct ProfileView: View {
                 }
             }
         }
+    }
+    
+    private func recalculateStats() async {
+        isRecalculatingStats = true
+        
+        do {
+            // First, force reload sessions from Firebase to ensure we have all data
+            await WorkoutSessionStorage.shared.loadSessionsFromFirebaseAsync()
+            
+            // Then recalculate stats from the actual sessions
+            WorkoutStatsStorage.shared.recalculateStatsFromSessions()
+            
+            // Also run the Firebase service recalculation as backup
+            try await firebaseService.recalculateAndUpdateUserStats()
+            
+            print("✅ Stats recalculation completed successfully")
+        } catch {
+            print("❌ Error recalculating stats: \(error)")
+        }
+        
+        isRecalculatingStats = false
     }
 }
 
