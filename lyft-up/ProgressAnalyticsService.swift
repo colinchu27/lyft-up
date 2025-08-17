@@ -106,37 +106,169 @@ class ProgressAnalyticsService: ObservableObject {
         let cutoffDate = Calendar.current.date(byAdding: .day, value: -timeRange.days, to: Date()) ?? Date()
         let completedSessions = sessionStorage.sessions.filter { $0.isCompleted && $0.startTime >= cutoffDate }
         
-        // Group sessions by date (like in WorkoutHistoryView)
-        let groupedSessions = Dictionary(grouping: completedSessions) { session in
-            Calendar.current.startOfDay(for: session.startTime)
+        print("ProgressAnalytics: getChartData called for \(timeRange.rawValue) (\(timeRange.days) days)")
+        print("ProgressAnalytics: Cutoff date: \(cutoffDate)")
+        print("ProgressAnalytics: Total sessions: \(sessionStorage.sessions.count)")
+        print("ProgressAnalytics: Completed sessions in range: \(completedSessions.count)")
+        
+        // Use different aggregation strategies based on time range
+        let chartData: [ChartDataPoint]
+        
+        switch timeRange {
+        case .week:
+            chartData = aggregateByDay(completedSessions, metric: metric)
+        case .month:
+            chartData = aggregateByWeek(completedSessions, metric: metric)
+        case .threeMonths:
+            chartData = aggregateByMonthFIFO(completedSessions, metric: metric)
         }
         
-        // Convert to chart data points
-        let chartData = groupedSessions.map { date, sessions in
-            let totalVolume = sessions.reduce(0.0) { total, session in
-                total + session.exercises.reduce(0.0) { exerciseTotal, exercise in
+        let sortedData = chartData.sorted { $0.date < $1.date }
+        print("ProgressAnalytics: Returning \(sortedData.count) chart data points")
+        return sortedData
+    }
+    
+    // MARK: - Chart Data Aggregation Methods
+    
+    private func aggregateByDay(_ sessions: [WorkoutSession], metric: ChartMetric) -> [ChartDataPoint] {
+        let calendar = Calendar.current
+        let today = Date()
+        var dailyData: [Date: (volume: Double, duration: TimeInterval, count: Int)] = [:]
+        
+        // Initialize last 7 days
+        for i in 0..<7 {
+            if let date = calendar.date(byAdding: .day, value: -i, to: today) {
+                let startOfDay = calendar.startOfDay(for: date)
+                dailyData[startOfDay] = (0, 0, 0)
+            }
+        }
+        
+        // Fill in actual data
+        for session in sessions {
+            let startOfDay = calendar.startOfDay(for: session.startTime)
+            if dailyData[startOfDay] != nil {
+                let volume = session.exercises.reduce(0.0) { exerciseTotal, exercise in
                     exerciseTotal + exercise.sets.reduce(0.0) { setTotal, set in
                         setTotal + (set.weight * Double(set.reps))
                     }
                 }
-            }
-            
-            let totalDuration = sessions.reduce(0.0) { total, session in
-                guard let endTime = session.endTime else { return total }
-                return total + endTime.timeIntervalSince(session.startTime)
-            }
-            
-            let averageDuration = sessions.isEmpty ? 0 : totalDuration / Double(sessions.count)
-            
-            switch metric {
-            case .volume:
-                return ChartDataPoint(date: date, value: totalVolume, label: "Total Weight (lbs)")
-            case .duration:
-                return ChartDataPoint(date: date, value: averageDuration / 60, label: "Duration (min)")
+                
+                let duration = session.endTime?.timeIntervalSince(session.startTime) ?? 0
+                
+                let current = dailyData[startOfDay] ?? (0, 0, 0)
+                dailyData[startOfDay] = (
+                    current.volume + volume,
+                    current.duration + duration,
+                    current.count + 1
+                )
             }
         }
         
-        return chartData.sorted { $0.date < $1.date }
+        return dailyData.sorted { $0.key < $1.key }.map { date, data in
+            let value = metric == .volume ? data.volume : (data.count > 0 ? data.duration / Double(data.count) / 60 : 0)
+            let label = metric == .volume ? "Total Weight (lbs)" : "Duration (min)"
+            return ChartDataPoint(date: date, value: value, label: label)
+        }
+    }
+    
+    private func aggregateByWeek(_ sessions: [WorkoutSession], metric: ChartMetric) -> [ChartDataPoint] {
+        let calendar = Calendar.current
+        var weeklyData: [Date: (volume: Double, duration: TimeInterval, count: Int)] = [:]
+        
+        // Group sessions by week
+        for session in sessions {
+            let weekStart = calendar.dateInterval(of: .weekOfYear, for: session.startTime)?.start ?? session.startTime
+            let startOfWeek = calendar.startOfDay(for: weekStart)
+            
+            let volume = session.exercises.reduce(0.0) { exerciseTotal, exercise in
+                exerciseTotal + exercise.sets.reduce(0.0) { setTotal, set in
+                    setTotal + (set.weight * Double(set.reps))
+                }
+            }
+            
+            let duration = session.endTime?.timeIntervalSince(session.startTime) ?? 0
+            
+            let current = weeklyData[startOfWeek] ?? (0, 0, 0)
+            weeklyData[startOfWeek] = (
+                current.volume + volume,
+                current.duration + duration,
+                current.count + 1
+            )
+        }
+        
+        return weeklyData.sorted { $0.key < $1.key }.map { date, data in
+            let value = metric == .volume ? data.volume : (data.count > 0 ? data.duration / Double(data.count) / 60 : 0)
+            let label = metric == .volume ? "Total Weight (lbs)" : "Duration (min)"
+            return ChartDataPoint(date: date, value: value, label: label)
+        }
+    }
+    
+    private func aggregateByMonth(_ sessions: [WorkoutSession], metric: ChartMetric) -> [ChartDataPoint] {
+        let calendar = Calendar.current
+        var monthlyData: [Date: (volume: Double, duration: TimeInterval, count: Int)] = [:]
+        
+        // Group sessions by month
+        for session in sessions {
+            let monthStart = calendar.dateInterval(of: .month, for: session.startTime)?.start ?? session.startTime
+            let startOfMonth = calendar.startOfDay(for: monthStart)
+            
+            let volume = session.exercises.reduce(0.0) { exerciseTotal, exercise in
+                exerciseTotal + exercise.sets.reduce(0.0) { setTotal, set in
+                    setTotal + (set.weight * Double(set.reps))
+                }
+            }
+            
+            let duration = session.endTime?.timeIntervalSince(session.startTime) ?? 0
+            
+            let current = monthlyData[startOfMonth] ?? (0, 0, 0)
+            monthlyData[startOfMonth] = (
+                current.volume + volume,
+                current.duration + duration,
+                current.count + 1
+            )
+        }
+        
+        return monthlyData.sorted { $0.key < $1.key }.map { date, data in
+            let value = metric == .volume ? data.volume : (data.count > 0 ? data.duration / Double(data.count) / 60 : 0)
+            let label = metric == .volume ? "Total Weight (lbs)" : "Duration (min)"
+            return ChartDataPoint(date: date, value: value, label: label)
+        }
+    }
+    
+    private func aggregateByMonthFIFO(_ sessions: [WorkoutSession], metric: ChartMetric) -> [ChartDataPoint] {
+        let calendar = Calendar.current
+        var monthlyData: [Date: (volume: Double, duration: TimeInterval, count: Int)] = [:]
+        
+        // Group sessions by month
+        for session in sessions {
+            let monthStart = calendar.dateInterval(of: .month, for: session.startTime)?.start ?? session.startTime
+            let startOfMonth = calendar.startOfDay(for: monthStart)
+            
+            let volume = session.exercises.reduce(0.0) { exerciseTotal, exercise in
+                exerciseTotal + exercise.sets.reduce(0.0) { setTotal, set in
+                    setTotal + (set.weight * Double(set.reps))
+                }
+            }
+            
+            let duration = session.endTime?.timeIntervalSince(session.startTime) ?? 0
+            
+            let current = monthlyData[startOfMonth] ?? (0, 0, 0)
+            monthlyData[startOfMonth] = (
+                current.volume + volume,
+                current.duration + duration,
+                current.count + 1
+            )
+        }
+        
+        // Sort by date and take the most recent 3 months (FIFO approach)
+        let sortedMonths = monthlyData.sorted { $0.key < $1.key }
+        let recentMonths = Array(sortedMonths.suffix(3)) // Get last 3 months
+        
+        return recentMonths.map { date, data in
+            let value = metric == .volume ? data.volume : (data.count > 0 ? data.duration / Double(data.count) / 60 : 0)
+            let label = metric == .volume ? "Total Weight (lbs)" : "Duration (min)"
+            return ChartDataPoint(date: date, value: value, label: label)
+        }
     }
     
     private func getWorkoutsInTimeRange(_ sessions: [WorkoutSession], days: Int) -> Int {

@@ -127,13 +127,22 @@ struct ProgressDashboardView: View {
             // Chart
             ProgressChartView(
                 data: analyticsService.getChartData(for: selectedTimeRange, metric: selectedMetric),
-                metric: selectedMetric
+                metric: selectedMetric,
+                timeRange: selectedTimeRange
             )
             .frame(height: 200)
             .padding()
             .background(Color.white)
             .cornerRadius(12)
             .shadow(color: .black.opacity(0.05), radius: 5, x: 0, y: 2)
+            .onChange(of: selectedTimeRange) { newValue in
+                print("ProgressDashboardView: Time range changed to \(newValue.rawValue)")
+                print("ProgressDashboardView: Chart data points: \(analyticsService.getChartData(for: newValue, metric: selectedMetric).count)")
+            }
+            .onChange(of: selectedMetric) { newValue in
+                print("ProgressDashboardView: Metric changed to \(newValue.rawValue)")
+                print("ProgressDashboardView: Chart data points: \(analyticsService.getChartData(for: selectedTimeRange, metric: newValue).count)")
+            }
         }
     }
     
@@ -250,6 +259,7 @@ struct ProgressStatCard: View {
 struct ProgressChartView: View {
     let data: [ChartDataPoint]
     let metric: ChartMetric
+    let timeRange: TimeRange
     
     var body: some View {
         VStack {
@@ -258,6 +268,12 @@ struct ProgressChartView: View {
             } else {
                 chartContent
             }
+        }
+        .onAppear {
+            print("ProgressChartView: Appeared with \(data.count) data points")
+        }
+        .onChange(of: data.count) { newCount in
+            print("ProgressChartView: Data count changed to \(newCount)")
         }
     }
     
@@ -280,6 +296,11 @@ struct ProgressChartView: View {
                     .font(.headline)
                     .fontWeight(.semibold)
                 
+                // Debug info
+                Text("\(data.count) points")
+                    .font(.caption)
+                    .foregroundColor(.gray)
+                
                 Spacer()
                 
                 // Summary stats
@@ -298,6 +319,7 @@ struct ProgressChartView: View {
             // Bar chart with numerical values
             HStack(alignment: .bottom, spacing: 4) {
                 ForEach(data) { point in
+                    let _ = print("ProgressChartView: Data point - \(formatDate(point.date)): \(point.value)")
                     VStack(spacing: 4) {
                         // Numerical value above bar
                         Text(formatValue(point.value))
@@ -365,7 +387,14 @@ struct ProgressChartView: View {
     
     private func formatDate(_ date: Date) -> String {
         let formatter = DateFormatter()
-        formatter.dateFormat = "MMM dd"
+        
+        // For month view, show only month name
+        if timeRange == .month {
+            formatter.dateFormat = "MMM"
+        } else {
+            formatter.dateFormat = "MMM dd"
+        }
+        
         return formatter.string(from: date)
     }
 }
