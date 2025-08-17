@@ -46,20 +46,19 @@ struct ExerciseProgressView: View {
     }
     
     private var exerciseProgressContent: some View {
-        ScrollView {
-            VStack(spacing: 24) {
-                // Exercise Selector
-                exerciseSelector
-                
-                if !selectedExercise.isEmpty {
-                    // Selected Exercise Details
-                    selectedExerciseDetails
+        ZStack {
+            ScrollView {
+                VStack(spacing: 24) {
+                    // All Exercises List
+                    allExercisesList
                 }
-                
-                // All Exercises List
-                allExercisesList
+                .padding()
             }
-            .padding()
+            
+            // Selected Exercise Details Overlay
+            if !selectedExercise.isEmpty {
+                selectedExerciseOverlay
+            }
         }
     }
     
@@ -84,6 +83,63 @@ struct ExerciseProgressView: View {
                 .padding(.horizontal)
             }
         }
+    }
+    
+    private var selectedExerciseOverlay: some View {
+        ZStack {
+            // Semi-transparent background
+            Color.black.opacity(0.4)
+                .ignoresSafeArea()
+                .onTapGesture {
+                    selectedExercise = ""
+                }
+            
+            // Exercise details card
+            VStack(spacing: 0) {
+                // Header with close button
+                HStack {
+                    Text(selectedExercise)
+                        .font(.title2)
+                        .fontWeight(.bold)
+                        .foregroundColor(.lyftText)
+                    
+                    Spacer()
+                    
+                    Button(action: {
+                        selectedExercise = ""
+                    }) {
+                        Image(systemName: "xmark.circle.fill")
+                            .font(.title2)
+                            .foregroundColor(.gray)
+                    }
+                }
+                .padding()
+                .background(Color.white)
+                
+                // Content
+                ScrollView {
+                    VStack(spacing: 20) {
+                        // Personal Records
+                        personalRecordsSection
+                        
+                        // Progress Chart
+                        progressChartSection
+                        
+                        // Recent Sessions
+                        recentSessionsSection
+                    }
+                    .padding()
+                }
+                .background(Color.white)
+            }
+            .background(Color.white)
+            .cornerRadius(16)
+            .shadow(color: .black.opacity(0.2), radius: 20, x: 0, y: 10)
+            .padding(.horizontal, 20)
+            .padding(.vertical, 40)
+        }
+        .transition(.opacity.combined(with: .scale))
+        .animation(.easeInOut(duration: 0.3), value: selectedExercise)
     }
     
     private var selectedExerciseDetails: some View {
@@ -234,7 +290,11 @@ struct ExerciseProgressView: View {
             ForEach(Array(analyticsService.exerciseProgress.keys.sorted()), id: \.self) { exerciseName in
                 ExerciseSummaryRow(
                     exerciseName: exerciseName,
-                    progress: analyticsService.exerciseProgress[exerciseName] ?? []
+                    progress: analyticsService.exerciseProgress[exerciseName] ?? [],
+                    isSelected: selectedExercise == exerciseName,
+                    onTap: {
+                        selectedExercise = exerciseName
+                    }
                 )
             }
         }
@@ -349,38 +409,48 @@ struct ExerciseSessionRow: View {
 struct ExerciseSummaryRow: View {
     let exerciseName: String
     let progress: [ExerciseProgress]
+    let isSelected: Bool
+    let onTap: () -> Void
     
     var body: some View {
-        HStack {
-            VStack(alignment: .leading, spacing: 4) {
-                Text(exerciseName)
-                    .font(.headline)
-                    .fontWeight(.semibold)
+        Button(action: onTap) {
+            HStack {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(exerciseName)
+                        .font(.headline)
+                        .fontWeight(.semibold)
+                        .foregroundColor(isSelected ? .lyftRed : .lyftText)
+                    
+                    if let maxWeight = progress.map({ $0.maxWeight }).max() {
+                        Text("Max: \(Int(maxWeight)) lbs")
+                            .font(.subheadline)
+                            .foregroundColor(.lyftTextSecondary)
+                    }
+                }
                 
-                if let maxWeight = progress.map({ $0.maxWeight }).max() {
-                    Text("Max: \(Int(maxWeight)) lbs")
-                        .font(.subheadline)
+                Spacer()
+                
+                VStack(alignment: .trailing, spacing: 4) {
+                    Text("\(progress.count)")
+                        .font(.title3)
+                        .fontWeight(.bold)
+                        .foregroundColor(.lyftRed)
+                    
+                    Text("sessions")
+                        .font(.caption)
                         .foregroundColor(.lyftTextSecondary)
                 }
             }
-            
-            Spacer()
-            
-            VStack(alignment: .trailing, spacing: 4) {
-                Text("\(progress.count)")
-                    .font(.title3)
-                    .fontWeight(.bold)
-                    .foregroundColor(.lyftRed)
-                
-                Text("sessions")
-                    .font(.caption)
-                    .foregroundColor(.lyftTextSecondary)
-            }
+            .padding()
+            .background(isSelected ? Color.lyftRed.opacity(0.1) : Color.white)
+            .cornerRadius(12)
+            .shadow(color: .black.opacity(0.05), radius: 5, x: 0, y: 2)
+            .overlay(
+                RoundedRectangle(cornerRadius: 12)
+                    .stroke(isSelected ? Color.lyftRed : Color.clear, lineWidth: 2)
+            )
         }
-        .padding()
-        .background(Color.white)
-        .cornerRadius(12)
-        .shadow(color: .black.opacity(0.05), radius: 5, x: 0, y: 2)
+        .buttonStyle(PlainButtonStyle())
     }
 }
 
