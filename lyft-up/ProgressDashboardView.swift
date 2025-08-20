@@ -86,11 +86,11 @@ struct ProgressDashboardView: View {
                     color: .orange
                 )
                 
-                // Average Duration
+                // Total Duration This Week
                 ProgressStatCard(
-                    title: "Avg Duration",
-                    value: formatDuration(analyticsService.progressMetrics.averageWorkoutDuration),
-                    subtitle: "per workout",
+                    title: "This Week",
+                    value: formatDuration(analyticsService.progressMetrics.totalDurationThisWeek),
+                    subtitle: "total time",
                     icon: "clock.fill",
                     color: .green
                 )
@@ -210,8 +210,19 @@ struct ProgressDashboardView: View {
     }
     
     private func formatDuration(_ duration: TimeInterval) -> String {
-        let minutes = Int(duration) / 60
-        return "\(minutes)m"
+        let totalSeconds = Int(duration)
+        let totalMinutes = totalSeconds / 60
+        let hours = totalMinutes / 60
+        let minutes = totalMinutes % 60
+        let seconds = totalSeconds % 60
+        
+        if hours > 0 {
+            return "\(hours)h \(minutes)m"
+        } else if minutes > 0 {
+            return "\(minutes)m \(seconds)s"
+        } else {
+            return "\(seconds)s"
+        }
     }
 }
 

@@ -214,6 +214,8 @@ struct ProgressMetrics: Codable {
     var monthlyWorkouts: Int
     var streakDays: Int
     var averageWorkoutDuration: TimeInterval
+    var totalDurationThisWeek: TimeInterval
+    var totalDurationThisMonth: TimeInterval
     var totalVolumeThisWeek: Double
     var totalVolumeThisMonth: Double
     var totalWorkouts: Int
@@ -224,6 +226,8 @@ struct ProgressMetrics: Codable {
         self.monthlyWorkouts = 0
         self.streakDays = 0
         self.averageWorkoutDuration = 0
+        self.totalDurationThisWeek = 0
+        self.totalDurationThisMonth = 0
         self.totalVolumeThisWeek = 0
         self.totalVolumeThisMonth = 0
         self.totalWorkouts = 0
