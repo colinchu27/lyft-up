@@ -272,8 +272,27 @@ class ProgressAnalyticsService: ObservableObject {
     }
     
     private func getWorkoutsInTimeRange(_ sessions: [WorkoutSession], days: Int) -> Int {
-        let cutoffDate = Calendar.current.date(byAdding: .day, value: -days, to: Date()) ?? Date()
-        return sessions.filter { $0.startTime >= cutoffDate }.count
+        let calendar = Calendar.current
+        let now = Date()
+        
+        if days == 7 {
+            // For weekly workouts, calculate from Monday of current week to Sunday
+            // Get the start of the current week (Monday)
+            let weekStart = calendar.dateInterval(of: .weekOfYear, for: now)?.start ?? now
+            let startOfWeek = calendar.startOfDay(for: weekStart)
+            
+            // Get the end of the current week (Sunday)
+            let endOfWeek = calendar.date(byAdding: .day, value: 6, to: startOfWeek) ?? now
+            
+            return sessions.filter { session in
+                let sessionDate = calendar.startOfDay(for: session.startTime)
+                return sessionDate >= startOfWeek && sessionDate <= endOfWeek
+            }.count
+        } else {
+            // For other time ranges (monthly, etc.), use the original logic
+            let cutoffDate = calendar.date(byAdding: .day, value: -days, to: now) ?? now
+            return sessions.filter { $0.startTime >= cutoffDate }.count
+        }
     }
     
     private func calculateStreakDays(_ sessions: [WorkoutSession]) -> Int {
@@ -314,10 +333,28 @@ class ProgressAnalyticsService: ObservableObject {
     }
     
     private func calculateTotalVolume(_ sessions: [WorkoutSession], days: Int) -> Double {
-        let cutoffDate = Calendar.current.date(byAdding: .day, value: -days, to: Date()) ?? Date()
-        let recentSessions = sessions.filter { $0.startTime >= cutoffDate }
+        let calendar = Calendar.current
+        let now = Date()
         
-        return recentSessions.reduce(0.0) { total, session in
+        let filteredSessions: [WorkoutSession]
+        
+        if days == 7 {
+            // For weekly volume, calculate from Monday of current week to Sunday
+            let weekStart = calendar.dateInterval(of: .weekOfYear, for: now)?.start ?? now
+            let startOfWeek = calendar.startOfDay(for: weekStart)
+            let endOfWeek = calendar.date(byAdding: .day, value: 6, to: startOfWeek) ?? now
+            
+            filteredSessions = sessions.filter { session in
+                let sessionDate = calendar.startOfDay(for: session.startTime)
+                return sessionDate >= startOfWeek && sessionDate <= endOfWeek
+            }
+        } else {
+            // For other time ranges (monthly, etc.), use the original logic
+            let cutoffDate = calendar.date(byAdding: .day, value: -days, to: now) ?? now
+            filteredSessions = sessions.filter { $0.startTime >= cutoffDate }
+        }
+        
+        return filteredSessions.reduce(0.0) { total, session in
             total + session.exercises.reduce(0.0) { exerciseTotal, exercise in
                 exerciseTotal + exercise.sets.reduce(0.0) { setTotal, set in
                     setTotal + (set.weight * Double(set.reps))
