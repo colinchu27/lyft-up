@@ -288,8 +288,22 @@ class ProgressAnalyticsService: ObservableObject {
                 let sessionDate = calendar.startOfDay(for: session.startTime)
                 return sessionDate >= startOfWeek && sessionDate <= endOfWeek
             }.count
+        } else if days == 30 {
+            // For monthly workouts, calculate from the 1st of current month to last day of month
+            // Get the start of the current month (1st day)
+            let monthStart = calendar.dateInterval(of: .month, for: now)?.start ?? now
+            let startOfMonth = calendar.startOfDay(for: monthStart)
+            
+            // Get the end of the current month (last day)
+            let monthEnd = calendar.dateInterval(of: .month, for: now)?.end ?? now
+            let endOfMonth = calendar.date(byAdding: .day, value: -1, to: monthEnd) ?? now
+            
+            return sessions.filter { session in
+                let sessionDate = calendar.startOfDay(for: session.startTime)
+                return sessionDate >= startOfMonth && sessionDate <= endOfMonth
+            }.count
         } else {
-            // For other time ranges (monthly, etc.), use the original logic
+            // For other time ranges, use the original logic
             let cutoffDate = calendar.date(byAdding: .day, value: -days, to: now) ?? now
             return sessions.filter { $0.startTime >= cutoffDate }.count
         }
@@ -348,8 +362,20 @@ class ProgressAnalyticsService: ObservableObject {
                 let sessionDate = calendar.startOfDay(for: session.startTime)
                 return sessionDate >= startOfWeek && sessionDate <= endOfWeek
             }
+        } else if days == 30 {
+            // For monthly volume, calculate from the 1st of current month to last day of month
+            let monthStart = calendar.dateInterval(of: .month, for: now)?.start ?? now
+            let startOfMonth = calendar.startOfDay(for: monthStart)
+            
+            let monthEnd = calendar.dateInterval(of: .month, for: now)?.end ?? now
+            let endOfMonth = calendar.date(byAdding: .day, value: -1, to: monthEnd) ?? now
+            
+            filteredSessions = sessions.filter { session in
+                let sessionDate = calendar.startOfDay(for: session.startTime)
+                return sessionDate >= startOfMonth && sessionDate <= endOfMonth
+            }
         } else {
-            // For other time ranges (monthly, etc.), use the original logic
+            // For other time ranges, use the original logic
             let cutoffDate = calendar.date(byAdding: .day, value: -days, to: now) ?? now
             filteredSessions = sessions.filter { $0.startTime >= cutoffDate }
         }
