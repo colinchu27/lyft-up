@@ -103,11 +103,41 @@ class ProgressAnalyticsService: ObservableObject {
     
     // Get chart data for the dashboard
     func getChartData(for timeRange: TimeRange, metric: ChartMetric) -> [ChartDataPoint] {
-        let cutoffDate = Calendar.current.date(byAdding: .day, value: -timeRange.days, to: Date()) ?? Date()
-        let completedSessions = sessionStorage.sessions.filter { $0.isCompleted && $0.startTime >= cutoffDate }
+        let calendar = Calendar.current
+        let now = Date()
         
-        print("ProgressAnalytics: getChartData called for \(timeRange.rawValue) (\(timeRange.days) days)")
-        print("ProgressAnalytics: Cutoff date: \(cutoffDate)")
+        let completedSessions: [WorkoutSession]
+        
+        // Filter sessions based on time range using the same logic as our metrics
+        switch timeRange {
+        case .week:
+            // For weekly view, show previous 7 days (rolling window)
+            let cutoffDate = calendar.date(byAdding: .day, value: -7, to: now) ?? now
+            
+            completedSessions = sessionStorage.sessions.filter { session in
+                session.isCompleted && session.startTime >= cutoffDate
+            }
+            
+        case .month:
+            // For monthly view, show current month (1st to last day)
+            let monthStart = calendar.dateInterval(of: .month, for: now)?.start ?? now
+            let startOfMonth = calendar.startOfDay(for: monthStart)
+            let monthEnd = calendar.dateInterval(of: .month, for: now)?.end ?? now
+            let endOfMonth = calendar.date(byAdding: .day, value: -1, to: monthEnd) ?? now
+            
+            completedSessions = sessionStorage.sessions.filter { session in
+                session.isCompleted && session.startTime >= startOfMonth && session.startTime <= endOfMonth
+            }
+            
+        case .threeMonths:
+            // For 3-month view, show last 90 days
+            let cutoffDate = calendar.date(byAdding: .day, value: -timeRange.days, to: now) ?? now
+            completedSessions = sessionStorage.sessions.filter { session in
+                session.isCompleted && session.startTime >= cutoffDate
+            }
+        }
+        
+        print("ProgressAnalytics: getChartData called for \(timeRange.rawValue)")
         print("ProgressAnalytics: Total sessions: \(sessionStorage.sessions.count)")
         print("ProgressAnalytics: Completed sessions in range: \(completedSessions.count)")
         
@@ -118,7 +148,7 @@ class ProgressAnalyticsService: ObservableObject {
         case .week:
             chartData = aggregateByDay(completedSessions, metric: metric)
         case .month:
-            chartData = aggregateByWeek(completedSessions, metric: metric)
+            chartData = aggregateByMonth(completedSessions, metric: metric)
         case .threeMonths:
             chartData = aggregateByMonthFIFO(completedSessions, metric: metric)
         }
@@ -205,34 +235,36 @@ class ProgressAnalyticsService: ObservableObject {
     
     private func aggregateByMonth(_ sessions: [WorkoutSession], metric: ChartMetric) -> [ChartDataPoint] {
         let calendar = Calendar.current
-        var monthlyData: [Date: (volume: Double, duration: TimeInterval, count: Int)] = [:]
+        let now = Date()
         
-        // Group sessions by month
+        // For monthly view, we want to show the current month as a single data point
+        // Get the start of the current month
+        let monthStart = calendar.dateInterval(of: .month, for: now)?.start ?? now
+        let startOfMonth = calendar.startOfDay(for: monthStart)
+        
+        // Calculate total volume and duration for the current month
+        var totalVolume: Double = 0
+        var totalDuration: TimeInterval = 0
+        var sessionCount = 0
+        
         for session in sessions {
-            let monthStart = calendar.dateInterval(of: .month, for: session.startTime)?.start ?? session.startTime
-            let startOfMonth = calendar.startOfDay(for: monthStart)
-            
-            let volume = session.exercises.reduce(0.0) { exerciseTotal, exercise in
+            totalVolume += session.exercises.reduce(0.0) { exerciseTotal, exercise in
                 exerciseTotal + exercise.sets.reduce(0.0) { setTotal, set in
                     setTotal + (set.weight * Double(set.reps))
                 }
             }
             
-            let duration = session.endTime?.timeIntervalSince(session.startTime) ?? 0
-            
-            let current = monthlyData[startOfMonth] ?? (0, 0, 0)
-            monthlyData[startOfMonth] = (
-                current.volume + volume,
-                current.duration + duration,
-                current.count + 1
-            )
+            if let endTime = session.endTime {
+                totalDuration += endTime.timeIntervalSince(session.startTime)
+            }
+            sessionCount += 1
         }
         
-        return monthlyData.sorted { $0.key < $1.key }.map { date, data in
-            let value = metric == .volume ? data.volume : (data.count > 0 ? data.duration / Double(data.count) / 60 : 0)
-            let label = metric == .volume ? "Total Weight (lbs)" : "Duration (min)"
-            return ChartDataPoint(date: date, value: value, label: label)
-        }
+        // Create a single data point for the current month
+        let value = metric == .volume ? totalVolume : (sessionCount > 0 ? totalDuration / Double(sessionCount) / 60 : 0)
+        let label = metric == .volume ? "Total Weight (lbs)" : "Duration (min)"
+        
+        return [ChartDataPoint(date: startOfMonth, value: value, label: label)]
     }
     
     private func aggregateByMonthFIFO(_ sessions: [WorkoutSession], metric: ChartMetric) -> [ChartDataPoint] {
