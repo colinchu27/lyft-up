@@ -15,6 +15,8 @@
 - Workout sessions with start/end tracking  
 - Auto-load last session data  
 - Add/remove exercises mid-workout  
+- Workout session storage with offline capability
+- Enhanced workout summary with detailed analytics
 
 ### 📊 Progress Analytics
 - Interactive dashboard with charts  
@@ -22,6 +24,9 @@
 - Exercise-specific progress tracking  
 - Weekly/monthly progress views  
 - Achievement badges and milestones  
+- Advanced progress analytics service
+- Exercise progress tracking with trends
+- Comprehensive workout statistics
 
 </td>
 <td>
@@ -31,6 +36,9 @@
 - View friends' workout history  
 - Real-time connection status  
 - Privacy controls  
+- Friend profile views with workout sharing
+- Enhanced friend request management
+- Friend routine sharing and viewing
 
 ### 📈 Data Management
 - Complete workout history with session details  
@@ -38,6 +46,9 @@
 - Automatic backups  
 - Routine storage and editing  
 - Workout summaries and analytics  
+- Firebase data conversion utilities
+- Improved error handling and debugging
+- User onboarding flow
 
 </td>
 </tr>
@@ -57,7 +68,7 @@ Inspired by apps like **RepCount**, Lyft-Up lets you:
 …but with a twist:  
 > 👥 Follow friends, view their workout history, and share your own progress!
 
-This is my **first iOS app** built from scratch using **SwiftUI**. It's a personal project meant to solve a real user need I’ve experienced: making workouts more interactive, social, and accountable — without the bloat or distractions of other fitness apps.
+This is my **first iOS app** built from scratch using **SwiftUI**. It's a personal project meant to solve a real user need I've experienced: making workouts more interactive, social, and accountable — without the bloat or distractions of other fitness apps.
 
 ---
 
@@ -69,10 +80,13 @@ This is my **first iOS app** built from scratch using **SwiftUI**. It's a person
 - Create fully custom workout routines tailored to your training style  
 - Log sets, reps, and weights with real-time tracking  
 - Instantly view past performance while you train  
-- Auto-load your last session’s data for each exercise  
+- Auto-load your last session's data for each exercise  
 - Manage workout sessions with clear start/end times  
 - Add or remove exercises mid-session without losing progress  
 - Post-workout summaries with detailed analytics  
+- Enhanced workout session storage with offline capability
+- Improved workout flow with better exercise management
+- Workout summary view with comprehensive session details
 
 ---
 
@@ -81,9 +95,13 @@ This is my **first iOS app** built from scratch using **SwiftUI**. It's a person
 - Secure email/password authentication  
 - Personal profiles with bios and fitness goals  
 - Friend system with search, add, and request management  
-- View your friends’ workout history and progress  
+- View your friends' workout history and progress  
 - Real-time connection status indicators  
 - Privacy controls for your goals and progress visibility  
+- Friend profile views with detailed workout sharing
+- Enhanced friend request system with better UX
+- Friend routine sharing and viewing capabilities
+- Improved friend components and UI
 
 ---
 
@@ -95,6 +113,10 @@ This is my **first iOS app** built from scratch using **SwiftUI**. It's a person
 - Maintain streaks and unlock achievement badges  
 - See total weight lifted and detailed workout stats  
 - Exercise-specific progress tracking and trends  
+- Advanced progress analytics service with comprehensive metrics
+- Exercise progress view with detailed tracking
+- Enhanced dashboard with better data visualization
+- Progress tracking with time-based analytics
 
 ---
 
@@ -106,6 +128,10 @@ This is my **first iOS app** built from scratch using **SwiftUI**. It's a person
 - Edit and manage your profile anytime  
 - Store, update, and reuse your favorite routines  
 - Comprehensive workout session management  
+- Firebase data conversion utilities for better data handling
+- Enhanced error handling and debugging capabilities
+- Improved user onboarding flow
+- Better data synchronization and conflict resolution
 
 ---
 
@@ -117,6 +143,10 @@ This is my **first iOS app** built from scratch using **SwiftUI**. It's a person
 - Clear loading states and error handling  
 - Streamlined workout flow from routine creation to session completion  
 - Pull-to-refresh for real-time data updates  
+- Enhanced authentication view with better UX
+- Improved profile editing capabilities
+- Better workout history view with enhanced filtering
+- Streamlined routine builder with improved exercise management
 
 </details>
 
@@ -148,6 +178,8 @@ Most gym apps either feel too **bloated** or too **isolated**. They don't help y
 - **Firestore** – NoSQL cloud database  
 - **Firebase Security Rules** – Data protection  
 - **UserDefaults** – Local data persistence  
+- **Enhanced Firebase services** – Better error handling and data conversion utilities
+- **Improved data synchronization** – Enhanced cloud sync capabilities
 
 ### **Development & Testing**  
 - **iOS Simulator** – Development and testing  
@@ -160,3 +192,5 @@ Most gym apps either feel too **bloated** or too **isolated**. They don't help y
 - **SwiftUI Charts** – Data visualization  
 
 </details>
+
+
