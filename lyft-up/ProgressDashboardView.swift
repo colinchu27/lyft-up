@@ -207,6 +207,27 @@ struct ProgressDashboardView: View {
                 }
                 
                 AchievementBadge(
+                    title: "500K lbs",
+                    icon: "dumbbell.fill",
+                    isUnlocked: analyticsService.getTotalVolume() >= 500000,
+                    color: .blue,
+                    progress: min(analyticsService.getTotalVolume() / 500000.0, 1.0),
+                    showProgress: analyticsService.getTotalVolume() < 500000
+                )
+                
+                // Only show 1M lbs achievement if 500K lbs is completed
+                if analyticsService.getTotalVolume() >= 500000 {
+                    AchievementBadge(
+                        title: "1M lbs",
+                        icon: "dumbbell.fill",
+                        isUnlocked: analyticsService.getTotalVolume() >= 1000000,
+                        color: .green,
+                        progress: min((analyticsService.getTotalVolume() - 500000) / 500000.0, 1.0),
+                        showProgress: analyticsService.getTotalVolume() < 1000000
+                    )
+                }
+                
+                AchievementBadge(
                     title: "7-Day Streak",
                     icon: "bolt.fill",
                     isUnlocked: analyticsService.progressMetrics.streakDays >= 7,
