@@ -367,8 +367,10 @@ struct WorkoutSetRow: View {
     
     @State private var weightText: String = ""
     @State private var repsText: String = ""
+    @State private var notesText: String = ""
     @FocusState private var isWeightFocused: Bool
     @FocusState private var isRepsFocused: Bool
+    @FocusState private var isNotesFocused: Bool
     
     var body: some View {
         mainContent
@@ -382,12 +384,17 @@ struct WorkoutSetRow: View {
     }
     
     private var mainContent: some View {
-        HStack(spacing: 12) {
-            setNumberSection
-            weightInputSection
-            repsInputSection
-            Spacer()
-            completionButton
+        VStack(spacing: 8) {
+            // Top row: Set number, weight, reps, completion button
+            HStack(spacing: 12) {
+                setNumberSection
+                weightInputSection
+                repsInputSection
+                completionButton
+            }
+            
+            // Bottom row: Notes field
+            notesInputSection
         }
     }
     
@@ -488,6 +495,31 @@ struct WorkoutSetRow: View {
         }
     }
     
+    private var notesInputSection: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Text("Notes")
+                .font(.caption)
+                .fontWeight(.medium)
+                .foregroundColor(.secondary)
+            
+            notesTextField
+        }
+    }
+    
+    private var notesTextField: some View {
+        TextField("Add note...", text: $notesText)
+            .textFieldStyle(RoundedBorderTextFieldStyle())
+            .font(.subheadline)
+            .focused($isNotesFocused)
+            .onChange(of: notesText) { newValue in
+                updateNotes(newValue)
+            }
+            .onSubmit {
+                isNotesFocused = false
+                completeSet()
+            }
+    }
+    
     private var completionButton: some View {
         Button(action: completeSet) {
             Image(systemName: set.isCompleted ? "checkmark.circle.fill" : "circle")
@@ -499,6 +531,7 @@ struct WorkoutSetRow: View {
     private func initializeTextFields() {
         weightText = set.weight > 0 ? String(Int(set.weight)) : ""
         repsText = set.reps > 0 ? String(set.reps) : ""
+        notesText = set.notes
     }
     
     private func updateWeight(_ newValue: String) {
@@ -514,6 +547,11 @@ struct WorkoutSetRow: View {
         if let reps = Int(newValue) {
             set.reps = reps
         }
+        onDataChanged()
+    }
+    
+    private func updateNotes(_ newValue: String) {
+        set.notes = newValue
         onDataChanged()
     }
     

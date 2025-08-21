@@ -198,26 +198,35 @@ struct ExerciseSummaryCard: View {
             // Sets List
             VStack(spacing: 8) {
                 ForEach(exercise.sets) { set in
-                    HStack {
-                        Text("Set \(set.setNumber)")
-                            .font(.subheadline)
-                            .fontWeight(.medium)
-                            .frame(width: 60, alignment: .leading)
+                    VStack(alignment: .leading, spacing: 4) {
+                        HStack {
+                            Text("Set \(set.setNumber)")
+                                .font(.subheadline)
+                                .fontWeight(.medium)
+                                .frame(width: 60, alignment: .leading)
+                            
+                            Text("\(Int(set.weight)) lbs")
+                                .font(.subheadline)
+                                .frame(width: 70, alignment: .leading)
+                            
+                            Text("× \(set.reps) reps")
+                                .font(.subheadline)
+                                .foregroundColor(.secondary)
+                            
+                            Spacer()
+                            
+                            Text("\(Int(set.weight * Double(set.reps))) lbs")
+                                .font(.subheadline)
+                                .fontWeight(.medium)
+                                .foregroundColor(.blue)
+                        }
                         
-                        Text("\(Int(set.weight)) lbs")
-                            .font(.subheadline)
-                            .frame(width: 70, alignment: .leading)
-                        
-                        Text("× \(set.reps) reps")
-                            .font(.subheadline)
-                            .foregroundColor(.secondary)
-                        
-                        Spacer()
-                        
-                        Text("\(Int(set.weight * Double(set.reps))) lbs")
-                            .font(.subheadline)
-                            .fontWeight(.medium)
-                            .foregroundColor(.blue)
+                        if !set.notes.isEmpty {
+                            Text(set.notes)
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                                .padding(.leading, 60)
+                        }
                     }
                     .padding(.vertical, 4)
                     .padding(.horizontal, 8)

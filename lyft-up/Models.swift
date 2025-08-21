@@ -165,6 +165,7 @@ struct WorkoutSet: Codable, Identifiable {
     var weight: Double = 0.0
     var reps: Int = 0
     var isCompleted: Bool = false
+    var notes: String = ""
     
     init(setNumber: Int) {
         self.setNumber = setNumber

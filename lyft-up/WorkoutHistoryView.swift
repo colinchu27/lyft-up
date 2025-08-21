@@ -329,25 +329,34 @@ struct ExerciseDetailCard: View {
             
             VStack(spacing: 8) {
                 ForEach(exercise.sets, id: \.id) { set in
-                    HStack {
-                        Text("Set \(set.setNumber)")
-                            .font(.subheadline)
-                            .fontWeight(.medium)
-                            .frame(width: 60, alignment: .leading)
+                    VStack(alignment: .leading, spacing: 4) {
+                        HStack {
+                            Text("Set \(set.setNumber)")
+                                .font(.subheadline)
+                                .fontWeight(.medium)
+                                .frame(width: 60, alignment: .leading)
+                            
+                            Text("\(Int(set.weight)) lbs")
+                                .font(.subheadline)
+                                .frame(width: 80, alignment: .leading)
+                            
+                            Text("\(set.reps) reps")
+                                .font(.subheadline)
+                            
+                            Spacer()
+                            
+                            if set.isCompleted {
+                                Image(systemName: "checkmark.circle.fill")
+                                    .foregroundColor(.green)
+                                    .font(.caption)
+                            }
+                        }
                         
-                        Text("\(Int(set.weight)) lbs")
-                            .font(.subheadline)
-                            .frame(width: 80, alignment: .leading)
-                        
-                        Text("\(set.reps) reps")
-                            .font(.subheadline)
-                        
-                        Spacer()
-                        
-                        if set.isCompleted {
-                            Image(systemName: "checkmark.circle.fill")
-                                .foregroundColor(.green)
+                        if !set.notes.isEmpty {
+                            Text(set.notes)
                                 .font(.caption)
+                                .foregroundColor(.secondary)
+                                .padding(.leading, 60)
                         }
                     }
                     .padding(.vertical, 4)

@@ -188,6 +188,7 @@ struct FirebaseDataConverter {
         var set = WorkoutSet(setNumber: 1)
         set.weight = weight
         set.reps = reps
+        set.notes = data["notes"] as? String ?? ""
         set.id = UUID(uuidString: id) ?? UUID()
         return set
     }
