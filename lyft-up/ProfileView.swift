@@ -22,27 +22,39 @@ struct ProfileView: View {
     var body: some View {
         NavigationView {
             ZStack {
-                // Background
-                Color.lyftGray.ignoresSafeArea()
+                // Enhanced background
+                LinearGradient(
+                    gradient: Gradient(colors: [Color.lyftGradientStart, Color.lyftGradientEnd]),
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
+                .ignoresSafeArea()
                 
                 ScrollView {
                     VStack(spacing: 24) {
-                        // Profile Header Card
-                        VStack(spacing: 20) {
-                            // Profile Avatar
+                        // Enhanced Profile Header Card
+                        VStack(spacing: 24) {
+                            // Enhanced Profile Avatar
                             ZStack {
                                 Circle()
-                                    .fill(Color.lyftRed.opacity(0.1))
-                                    .frame(width: 100, height: 100)
+                                    .fill(
+                                        LinearGradient(
+                                            gradient: Gradient(colors: [Color.lyftRed.opacity(0.2), Color.lyftRed.opacity(0.1)]),
+                                            startPoint: .topLeading,
+                                            endPoint: .bottomTrailing
+                                        )
+                                    )
+                                    .frame(width: 120, height: 120)
+                                    .shadow(color: .lyftRed.opacity(0.3), radius: 12, x: 0, y: 6)
                                 
                                 Image(systemName: "person.crop.circle.fill")
-                                    .font(.system(size: 60))
+                                    .font(.system(size: 70))
                                     .foregroundColor(.lyftRed)
                             }
                             
-                            VStack(spacing: 8) {
+                            VStack(spacing: 12) {
                                 Text(userDisplayName)
-                                    .font(.system(size: 24, weight: .bold))
+                                    .font(.system(size: 28, weight: .bold))
                                     .foregroundColor(.lyftText)
                                 
                                 Text(userBio)
@@ -53,27 +65,32 @@ struct ProfileView: View {
                         }
                         .padding(.vertical, 32)
                         .padding(.horizontal, 24)
-                        .background(Color.white)
-                        .cornerRadius(16)
-                        .shadow(color: Color.black.opacity(0.05), radius: 10, x: 0, y: 2)
+                        .lyftCard()
                         .padding(.horizontal, 20)
                         
-                        // Fitness Stats Card
-                        VStack(alignment: .leading, spacing: 20) {
+                        // Enhanced Fitness Stats Card
+                        VStack(alignment: .leading, spacing: 24) {
                             Text("Your Fitness Profile")
-                                .font(.system(size: 20, weight: .bold))
+                                .font(.system(size: 22, weight: .bold))
                                 .foregroundColor(.lyftText)
                             
-                            VStack(spacing: 16) {
+                            VStack(spacing: 20) {
                                 // Total Workouts
                                 HStack {
                                     ZStack {
                                         Circle()
-                                            .fill(Color.lyftRed.opacity(0.1))
-                                            .frame(width: 40, height: 40)
+                                            .fill(
+                                                LinearGradient(
+                                                    gradient: Gradient(colors: [Color.lyftRed.opacity(0.2), Color.lyftRed.opacity(0.1)]),
+                                                    startPoint: .topLeading,
+                                                    endPoint: .bottomTrailing
+                                                )
+                                            )
+                                            .frame(width: 48, height: 48)
+                                            .shadow(color: .lyftRed.opacity(0.2), radius: 4, x: 0, y: 2)
                                         
                                         Image(systemName: "flame.fill")
-                                            .font(.system(size: 18))
+                                            .font(.system(size: 20))
                                             .foregroundColor(.lyftRed)
                                     }
                                     
@@ -93,11 +110,18 @@ struct ProfileView: View {
                                 HStack {
                                     ZStack {
                                         Circle()
-                                            .fill(Color.lyftRed.opacity(0.1))
-                                            .frame(width: 40, height: 40)
+                                            .fill(
+                                                LinearGradient(
+                                                    gradient: Gradient(colors: [Color.lyftRed.opacity(0.2), Color.lyftRed.opacity(0.1)]),
+                                                    startPoint: .topLeading,
+                                                    endPoint: .bottomTrailing
+                                                )
+                                            )
+                                            .frame(width: 48, height: 48)
+                                            .shadow(color: .lyftRed.opacity(0.2), radius: 4, x: 0, y: 2)
                                         
                                         Image(systemName: "dumbbell.fill")
-                                            .font(.system(size: 18))
+                                            .font(.system(size: 20))
                                             .foregroundColor(.lyftRed)
                                     }
                                     

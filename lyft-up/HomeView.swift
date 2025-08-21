@@ -16,16 +16,16 @@ struct HomeView: View {
     var body: some View {
         NavigationView {
             ZStack {
-                // Background gradient
+                // Enhanced background gradient
                 LinearGradient(
-                    gradient: Gradient(colors: [Color.lyftGray, Color.white]),
+                    gradient: Gradient(colors: [Color.lyftGradientStart, Color.lyftGradientEnd]),
                     startPoint: .topLeading,
                     endPoint: .bottomTrailing
                 )
                 .ignoresSafeArea()
                 
                 ScrollView {
-                    VStack(spacing: 24) {
+                    VStack(spacing: 28) {
                         // Header Section
                         headerSection
                         
@@ -77,11 +77,18 @@ struct HomeView: View {
                     
                     Spacer()
                     
-                    // Profile Avatar
+                    // Enhanced Profile Avatar
                     ZStack {
                         Circle()
-                            .fill(Color.lyftRed.opacity(0.15))
+                            .fill(
+                                LinearGradient(
+                                    gradient: Gradient(colors: [Color.lyftRed.opacity(0.2), Color.lyftRed.opacity(0.1)]),
+                                    startPoint: .topLeading,
+                                    endPoint: .bottomTrailing
+                                )
+                            )
                             .frame(width: 60, height: 60)
+                            .shadow(color: .lyftRed.opacity(0.2), radius: 8, x: 0, y: 4)
                         
                         Image(systemName: "person.crop.circle.fill")
                             .font(.system(size: 30))
@@ -104,11 +111,7 @@ struct HomeView: View {
                 }
             }
             .padding(24)
-            .background(
-                RoundedRectangle(cornerRadius: 20)
-                    .fill(Color.white)
-                    .shadow(color: Color.black.opacity(0.08), radius: 15, x: 0, y: 5)
-            )
+            .lyftCard()
         }
     }
     
@@ -182,11 +185,18 @@ struct HomeView: View {
                     HStack {
                         ZStack {
                             Circle()
-                                .fill(Color.lyftRed.opacity(0.15))
-                                .frame(width: 44, height: 44)
+                                .fill(
+                                    LinearGradient(
+                                        gradient: Gradient(colors: [Color.lyftRed.opacity(0.2), Color.lyftRed.opacity(0.1)]),
+                                        startPoint: .topLeading,
+                                        endPoint: .bottomTrailing
+                                    )
+                                )
+                                .frame(width: 48, height: 48)
+                                .shadow(color: .lyftRed.opacity(0.2), radius: 4, x: 0, y: 2)
                             
                             Image(systemName: "play.fill")
-                                .font(.system(size: 18))
+                                .font(.system(size: 20))
                                 .foregroundColor(.lyftRed)
                         }
                         
@@ -206,10 +216,8 @@ struct HomeView: View {
                             .font(.system(size: 14, weight: .medium))
                             .foregroundColor(.lyftTextSecondary)
                     }
-                    .padding(16)
-                    .background(Color.white)
-                    .cornerRadius(16)
-                    .shadow(color: Color.black.opacity(0.05), radius: 8, x: 0, y: 2)
+                    .padding(18)
+                    .lyftCard()
                 }
                 .buttonStyle(PlainButtonStyle())
                 
@@ -220,11 +228,18 @@ struct HomeView: View {
                     HStack {
                         ZStack {
                             Circle()
-                                .fill(Color.green.opacity(0.15))
-                                .frame(width: 44, height: 44)
+                                .fill(
+                                    LinearGradient(
+                                        gradient: Gradient(colors: [Color.green.opacity(0.2), Color.green.opacity(0.1)]),
+                                        startPoint: .topLeading,
+                                        endPoint: .bottomTrailing
+                                    )
+                                )
+                                .frame(width: 48, height: 48)
+                                .shadow(color: .green.opacity(0.2), radius: 4, x: 0, y: 2)
                             
                             Image(systemName: "person.2.fill")
-                                .font(.system(size: 18))
+                                .font(.system(size: 20))
                                 .foregroundColor(.green)
                         }
                         
@@ -244,10 +259,8 @@ struct HomeView: View {
                             .font(.system(size: 14, weight: .medium))
                             .foregroundColor(.lyftTextSecondary)
                     }
-                    .padding(16)
-                    .background(Color.white)
-                    .cornerRadius(16)
-                    .shadow(color: Color.black.opacity(0.05), radius: 8, x: 0, y: 2)
+                    .padding(18)
+                    .lyftCard()
                 }
                 .buttonStyle(PlainButtonStyle())
                 
@@ -258,11 +271,18 @@ struct HomeView: View {
                     HStack {
                         ZStack {
                             Circle()
-                                .fill(Color.blue.opacity(0.15))
-                                .frame(width: 44, height: 44)
+                                .fill(
+                                    LinearGradient(
+                                        gradient: Gradient(colors: [Color.blue.opacity(0.2), Color.blue.opacity(0.1)]),
+                                        startPoint: .topLeading,
+                                        endPoint: .bottomTrailing
+                                    )
+                                )
+                                .frame(width: 48, height: 48)
+                                .shadow(color: .blue.opacity(0.2), radius: 4, x: 0, y: 2)
                             
                             Image(systemName: "chart.line.uptrend.xyaxis")
-                                .font(.system(size: 18))
+                                .font(.system(size: 20))
                                 .foregroundColor(.blue)
                         }
                         
@@ -282,10 +302,8 @@ struct HomeView: View {
                             .font(.system(size: 14, weight: .medium))
                             .foregroundColor(.lyftTextSecondary)
                     }
-                    .padding(16)
-                    .background(Color.white)
-                    .cornerRadius(16)
-                    .shadow(color: Color.black.opacity(0.05), radius: 8, x: 0, y: 2)
+                    .padding(18)
+                    .lyftCard()
                 }
                 .buttonStyle(PlainButtonStyle())
             }
@@ -350,20 +368,27 @@ struct HomeStatCard: View {
     let color: Color
     
     var body: some View {
-        VStack(spacing: 12) {
+        VStack(spacing: 14) {
             ZStack {
                 Circle()
-                    .fill(color.opacity(0.15))
-                    .frame(width: 50, height: 50)
+                    .fill(
+                        LinearGradient(
+                            gradient: Gradient(colors: [color.opacity(0.2), color.opacity(0.1)]),
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
+                    .frame(width: 56, height: 56)
+                    .shadow(color: color.opacity(0.2), radius: 6, x: 0, y: 3)
                 
                 Image(systemName: icon)
-                    .font(.system(size: 20))
+                    .font(.system(size: 22))
                     .foregroundColor(color)
             }
             
             VStack(spacing: 4) {
                 Text(value)
-                    .font(.system(size: 16, weight: .bold))
+                    .font(.system(size: 18, weight: .bold))
                     .foregroundColor(.lyftText)
                     .lineLimit(1)
                     .minimumScaleFactor(0.8)
@@ -375,9 +400,7 @@ struct HomeStatCard: View {
             }
         }
         .padding(16)
-        .background(Color.white)
-        .cornerRadius(16)
-        .shadow(color: Color.black.opacity(0.05), radius: 8, x: 0, y: 2)
+        .lyftCard()
     }
 }
 

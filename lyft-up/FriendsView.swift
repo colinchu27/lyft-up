@@ -19,13 +19,23 @@ struct FriendsView: View {
     
     var body: some View {
         NavigationView {
-            VStack {
-                if isLoading {
-                    loadingView
-                } else if friends.isEmpty && pendingRequests.isEmpty {
-                    emptyStateView
-                } else {
-                    friendsListView
+            ZStack {
+                // Enhanced background
+                LinearGradient(
+                    gradient: Gradient(colors: [Color.lyftGradientStart, Color.lyftGradientEnd]),
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
+                .ignoresSafeArea()
+                
+                VStack {
+                    if isLoading {
+                        loadingView
+                    } else if friends.isEmpty && pendingRequests.isEmpty {
+                        emptyStateView
+                    } else {
+                        friendsListView
+                    }
                 }
             }
             .navigationTitle("Friends")
@@ -80,14 +90,27 @@ struct FriendsView: View {
     }
     
     private var emptyStateView: some View {
-        VStack(spacing: 24) {
-            Image(systemName: "person.2.fill")
-                .font(.system(size: 60))
-                .foregroundColor(.lyftRed.opacity(0.3))
+        VStack(spacing: 32) {
+            ZStack {
+                Circle()
+                    .fill(
+                        LinearGradient(
+                            gradient: Gradient(colors: [Color.lyftRed.opacity(0.2), Color.lyftRed.opacity(0.1)]),
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
+                    .frame(width: 120, height: 120)
+                    .shadow(color: .lyftRed.opacity(0.2), radius: 8, x: 0, y: 4)
+                
+                Image(systemName: "person.2.fill")
+                    .font(.system(size: 50))
+                    .foregroundColor(.lyftRed)
+            }
             
-            VStack(spacing: 12) {
+            VStack(spacing: 16) {
                 Text("No Friends Yet")
-                    .font(.system(size: 24, weight: .bold))
+                    .font(.system(size: 28, weight: .bold))
                     .foregroundColor(.lyftText)
                 
                 Text("Add friends to see their workouts and stay motivated together!")

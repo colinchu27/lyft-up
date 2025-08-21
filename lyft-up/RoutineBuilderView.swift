@@ -14,29 +14,41 @@ struct RoutineBuilderView: View {
     var body: some View {
         NavigationView {
             ZStack {
-                // Background
-                Color.lyftGray.ignoresSafeArea()
+                // Enhanced background
+                LinearGradient(
+                    gradient: Gradient(colors: [Color.lyftGradientStart, Color.lyftGradientEnd]),
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
+                .ignoresSafeArea()
                 
                 VStack {
                     if routineStorage.routines.isEmpty {
-                        // Empty State
-                        VStack(spacing: 32) {
+                        // Enhanced Empty State
+                        VStack(spacing: 40) {
                             Spacer()
                             
-                            VStack(spacing: 24) {
+                            VStack(spacing: 32) {
                                 ZStack {
                                     Circle()
-                                        .fill(Color.lyftRed.opacity(0.1))
-                                        .frame(width: 120, height: 120)
+                                        .fill(
+                                            LinearGradient(
+                                                gradient: Gradient(colors: [Color.lyftRed.opacity(0.2), Color.lyftRed.opacity(0.1)]),
+                                                startPoint: .topLeading,
+                                                endPoint: .bottomTrailing
+                                            )
+                                        )
+                                        .frame(width: 140, height: 140)
+                                        .shadow(color: .lyftRed.opacity(0.3), radius: 12, x: 0, y: 6)
                                     
                                     Image(systemName: "list.bullet.clipboard")
-                                        .font(.system(size: 50))
+                                        .font(.system(size: 60))
                                         .foregroundColor(.lyftRed)
                                 }
                                 
-                                VStack(spacing: 16) {
+                                VStack(spacing: 20) {
                                     Text("No Routines Yet")
-                                        .font(.system(size: 24, weight: .bold))
+                                        .font(.system(size: 28, weight: .bold))
                                         .foregroundColor(.lyftText)
                                     
                                     Text("Create your first workout routine to get started")

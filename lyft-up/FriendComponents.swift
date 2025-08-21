@@ -16,10 +16,17 @@ struct FriendRowView: View {
             showingFriendProfile = true
         }) {
             HStack(spacing: 16) {
-                // Profile Image Placeholder
+                // Enhanced Profile Image Placeholder
                 Circle()
-                    .fill(Color.lyftRed.opacity(0.1))
-                    .frame(width: 50, height: 50)
+                    .fill(
+                        LinearGradient(
+                            gradient: Gradient(colors: [Color.lyftRed.opacity(0.2), Color.lyftRed.opacity(0.1)]),
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
+                    .frame(width: 52, height: 52)
+                    .shadow(color: .lyftRed.opacity(0.15), radius: 4, x: 0, y: 2)
                     .overlay(
                         Text(String(friend.firstName.prefix(1) + friend.lastName.prefix(1)))
                             .font(.system(size: 18, weight: .semibold))
@@ -59,7 +66,9 @@ struct FriendRowView: View {
                     .font(.system(size: 12))
                     .foregroundColor(.lyftText.opacity(0.4))
             }
-            .padding(.vertical, 8)
+            .padding(.vertical, 12)
+            .padding(.horizontal, 16)
+            .lyftCard()
         }
         .buttonStyle(PlainButtonStyle())
         .sheet(isPresented: $showingFriendProfile) {
@@ -88,8 +97,15 @@ struct FriendRequestRow: View {
                     )
             } else if let user = fromUser {
                 Circle()
-                    .fill(Color.lyftRed.opacity(0.1))
-                    .frame(width: 50, height: 50)
+                    .fill(
+                        LinearGradient(
+                            gradient: Gradient(colors: [Color.lyftRed.opacity(0.2), Color.lyftRed.opacity(0.1)]),
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
+                    .frame(width: 52, height: 52)
+                    .shadow(color: .lyftRed.opacity(0.15), radius: 4, x: 0, y: 2)
                     .overlay(
                         Text(String(user.firstName.prefix(1) + user.lastName.prefix(1)))
                             .font(.system(size: 18, weight: .semibold))

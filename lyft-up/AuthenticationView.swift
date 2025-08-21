@@ -21,21 +21,33 @@ struct AuthenticationView: View {
     var body: some View {
         NavigationView {
             ZStack {
-                // Background
-                Color.white.ignoresSafeArea()
+                // Enhanced background
+                LinearGradient(
+                    gradient: Gradient(colors: [Color.lyftGradientStart, Color.lyftGradientEnd]),
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
+                .ignoresSafeArea()
                 
                 VStack(spacing: 40) {
                     // Header
                     VStack(spacing: 20) {
-                        // Logo and Brand
-                        VStack(spacing: 16) {
+                        // Enhanced Logo and Brand
+                        VStack(spacing: 20) {
                             ZStack {
                                 Circle()
-                                    .fill(Color.lyftRed.opacity(0.1))
-                                    .frame(width: 100, height: 100)
+                                    .fill(
+                                        LinearGradient(
+                                            gradient: Gradient(colors: [Color.lyftRed.opacity(0.2), Color.lyftRed.opacity(0.1)]),
+                                            startPoint: .topLeading,
+                                            endPoint: .bottomTrailing
+                                        )
+                                    )
+                                    .frame(width: 120, height: 120)
+                                    .shadow(color: .lyftRed.opacity(0.3), radius: 12, x: 0, y: 6)
                                 
                                 Image(systemName: "dumbbell.fill")
-                                    .font(.system(size: 40))
+                                    .font(.system(size: 50))
                                     .foregroundColor(.lyftRed)
                             }
                             
@@ -49,10 +61,10 @@ struct AuthenticationView: View {
                         }
                     }
                     
-                    // Form
-                    VStack(spacing: 24) {
+                    // Enhanced Form
+                    VStack(spacing: 28) {
                         // Email Field
-                        VStack(alignment: .leading, spacing: 8) {
+                        VStack(alignment: .leading, spacing: 10) {
                             Text("Email")
                                 .font(.headline)
                                 .foregroundColor(.lyftText)
@@ -65,7 +77,7 @@ struct AuthenticationView: View {
                         }
                         
                         // Password Field
-                        VStack(alignment: .leading, spacing: 8) {
+                        VStack(alignment: .leading, spacing: 10) {
                             Text("Password")
                                 .font(.headline)
                                 .foregroundColor(.lyftText)
@@ -76,7 +88,7 @@ struct AuthenticationView: View {
                         
                         // Confirm Password Field (Sign Up Only)
                         if isSignUp {
-                            VStack(alignment: .leading, spacing: 8) {
+                            VStack(alignment: .leading, spacing: 10) {
                                 Text("Confirm Password")
                                     .font(.headline)
                                     .foregroundColor(.lyftText)
@@ -108,15 +120,22 @@ struct AuthenticationView: View {
                     .disabled(!isFormValid || isLoading)
                     .padding(.horizontal, 24)
                     
-                    // Toggle Sign In/Sign Up
+                    // Enhanced Toggle Sign In/Sign Up
                     Button(action: { 
                         isSignUp.toggle()
                         clearForm()
                     }) {
                         Text(isSignUp ? "Already have an account? Sign In" : "Don't have an account? Sign Up")
                             .foregroundColor(.lyftRed)
-                            .font(.system(size: 14, weight: .medium))
+                            .font(.system(size: 15, weight: .medium))
+                            .padding(.vertical, 8)
+                            .padding(.horizontal, 16)
+                            .background(
+                                RoundedRectangle(cornerRadius: 20)
+                                    .fill(Color.lyftRed.opacity(0.1))
+                            )
                     }
+                    .buttonStyle(PlainButtonStyle())
                     
                     Spacer()
                 }

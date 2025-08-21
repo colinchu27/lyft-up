@@ -90,21 +90,23 @@ struct WorkoutSessionView: View {
     }
     
     private var workoutHeader: some View {
-        VStack(spacing: 8) {
+        VStack(spacing: 12) {
             Text(routine.name)
                 .font(.title2)
                 .fontWeight(.bold)
+                .foregroundColor(.lyftText)
             
             Text("\(activeExerciseCount) exercises")
                 .font(.subheadline)
-                .foregroundColor(.secondary)
+                .foregroundColor(.lyftTextSecondary)
             
             Text("Started at \(currentSession.startTime, style: .time)")
                 .font(.caption)
-                .foregroundColor(.secondary)
+                .foregroundColor(.lyftTextSecondary)
         }
-        .padding()
-        .background(Color(.systemGray6))
+        .padding(20)
+        .lyftCard()
+        .padding(.horizontal, 16)
     }
     
     private var activeExerciseCount: Int {
@@ -174,10 +176,18 @@ struct WorkoutSessionView: View {
             .foregroundColor(.white)
             .frame(maxWidth: .infinity)
             .padding(.vertical, 16)
-            .background(Color.red)
-            .cornerRadius(12)
+            .background(
+                LinearGradient(
+                    gradient: Gradient(colors: [Color.red, Color.red.opacity(0.8)]),
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
+            )
+            .cornerRadius(16)
+            .shadow(color: .red.opacity(0.3), radius: 8, x: 0, y: 4)
         }
-        .padding(.horizontal, 20)
+        .buttonStyle(LyftButtonStyle())
+        .padding(.horizontal, 16)
         .padding(.bottom, 20)
     }
     

@@ -14,21 +14,31 @@ struct ProgressDashboardView: View {
     
     var body: some View {
         NavigationView {
-            ScrollView {
-                VStack(spacing: 24) {
-                    // Header Stats
-                    statsOverview
-                    
-                    // Chart Section
-                    chartSection
-                    
-                    // Exercise Progress
-                    exerciseProgressSection
-                    
-                    // Achievements
-                    achievementsSection
+            ZStack {
+                // Enhanced background
+                LinearGradient(
+                    gradient: Gradient(colors: [Color.lyftGradientStart, Color.lyftGradientEnd]),
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
+                .ignoresSafeArea()
+                
+                ScrollView {
+                    VStack(spacing: 28) {
+                        // Header Stats
+                        statsOverview
+                        
+                        // Chart Section
+                        chartSection
+                        
+                        // Exercise Progress
+                        exerciseProgressSection
+                        
+                        // Achievements
+                        achievementsSection
+                    }
+                    .padding()
                 }
-                .padding()
             }
             .navigationTitle("Progress")
             .navigationBarTitleDisplayMode(.large)
@@ -124,17 +134,15 @@ struct ProgressDashboardView: View {
             }
             .pickerStyle(SegmentedPickerStyle())
             
-            // Chart
+            // Enhanced Chart
             ProgressChartView(
                 data: analyticsService.getChartData(for: selectedTimeRange, metric: selectedMetric),
                 metric: selectedMetric,
                 timeRange: selectedTimeRange
             )
-            .frame(height: 200)
-            .padding()
-            .background(Color.white)
-            .cornerRadius(12)
-            .shadow(color: .black.opacity(0.05), radius: 5, x: 0, y: 2)
+            .frame(height: 220)
+            .padding(20)
+            .lyftCard()
             .onChange(of: selectedTimeRange) { newValue in
                 print("ProgressDashboardView: Time range changed to \(newValue.rawValue)")
                 print("ProgressDashboardView: Chart data points: \(analyticsService.getChartData(for: newValue, metric: selectedMetric).count)")
@@ -264,14 +272,21 @@ struct ProgressStatCard: View {
     let color: Color
     
     var body: some View {
-        VStack(spacing: 12) {
+        VStack(spacing: 14) {
             ZStack {
                 Circle()
-                    .fill(color.opacity(0.1))
-                    .frame(width: 50, height: 50)
+                    .fill(
+                        LinearGradient(
+                            gradient: Gradient(colors: [color.opacity(0.2), color.opacity(0.1)]),
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
+                    .frame(width: 56, height: 56)
+                    .shadow(color: color.opacity(0.2), radius: 6, x: 0, y: 3)
                 
                 Image(systemName: icon)
-                    .font(.system(size: 20))
+                    .font(.system(size: 22))
                     .foregroundColor(color)
             }
             
@@ -290,10 +305,8 @@ struct ProgressStatCard: View {
                 .font(.caption)
                 .foregroundColor(.lyftTextSecondary)
         }
-        .padding()
-        .background(Color.white)
-        .cornerRadius(12)
-        .shadow(color: .black.opacity(0.05), radius: 5, x: 0, y: 2)
+        .padding(16)
+        .lyftCard()
     }
 }
 
