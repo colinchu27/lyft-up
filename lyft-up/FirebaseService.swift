@@ -333,6 +333,27 @@ class FirebaseService: ObservableObject {
         }
     }
     
+    func updateUserProfilePhotoURL(userId: String, photoURL: String) async {
+        do {
+            let userRef = db.collection("users").document(userId)
+            try await userRef.updateData([
+                "profilePhotoURL": photoURL
+            ])
+            
+            // Update local user profile
+            await MainActor.run {
+                if var updatedProfile = self.userProfile {
+                    updatedProfile.profilePhotoURL = photoURL
+                    self.userProfile = updatedProfile
+                }
+            }
+            
+            print("✅ Profile photo URL updated successfully")
+        } catch {
+            print("❌ Error updating profile photo URL: \(error)")
+        }
+    }
+    
     func debugAllFriendRequests() async {
         await friendService.debugAllFriendRequests()
     }

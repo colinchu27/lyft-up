@@ -16,22 +16,49 @@ struct FriendRowView: View {
             showingFriendProfile = true
         }) {
             HStack(spacing: 16) {
-                // Enhanced Profile Image Placeholder
-                Circle()
-                    .fill(
-                        LinearGradient(
-                            gradient: Gradient(colors: [Color.lyftRed.opacity(0.2), Color.lyftRed.opacity(0.1)]),
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
+                // Profile Photo or Placeholder
+                if let photoURL = friend.profilePhotoURL, !photoURL.isEmpty, !photoURL.hasPrefix("profile_photo_") {
+                    AsyncImage(url: URL(string: photoURL)) { image in
+                        image
+                            .resizable()
+                            .aspectRatio(contentMode: .fill)
+                            .frame(width: 52, height: 52)
+                            .clipShape(Circle())
+                            .shadow(color: .lyftRed.opacity(0.15), radius: 4, x: 0, y: 2)
+                    } placeholder: {
+                        Circle()
+                            .fill(
+                                LinearGradient(
+                                    gradient: Gradient(colors: [Color.lyftRed.opacity(0.2), Color.lyftRed.opacity(0.1)]),
+                                    startPoint: .topLeading,
+                                    endPoint: .bottomTrailing
+                                )
+                            )
+                            .frame(width: 52, height: 52)
+                            .shadow(color: .lyftRed.opacity(0.15), radius: 4, x: 0, y: 2)
+                            .overlay(
+                                Text(String(friend.firstName.prefix(1) + friend.lastName.prefix(1)))
+                                    .font(.system(size: 18, weight: .semibold))
+                                    .foregroundColor(.lyftRed)
+                            )
+                    }
+                } else {
+                    Circle()
+                        .fill(
+                            LinearGradient(
+                                gradient: Gradient(colors: [Color.lyftRed.opacity(0.2), Color.lyftRed.opacity(0.1)]),
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
                         )
-                    )
-                    .frame(width: 52, height: 52)
-                    .shadow(color: .lyftRed.opacity(0.15), radius: 4, x: 0, y: 2)
-                    .overlay(
-                        Text(String(friend.firstName.prefix(1) + friend.lastName.prefix(1)))
-                            .font(.system(size: 18, weight: .semibold))
-                            .foregroundColor(.lyftRed)
-                    )
+                        .frame(width: 52, height: 52)
+                        .shadow(color: .lyftRed.opacity(0.15), radius: 4, x: 0, y: 2)
+                        .overlay(
+                            Text(String(friend.firstName.prefix(1) + friend.lastName.prefix(1)))
+                                .font(.system(size: 18, weight: .semibold))
+                                .foregroundColor(.lyftRed)
+                        )
+                }
                 
                 VStack(alignment: .leading, spacing: 4) {
                     Text("\(friend.firstName) \(friend.lastName)")
@@ -96,21 +123,49 @@ struct FriendRequestRow: View {
                             .scaleEffect(0.8)
                     )
             } else if let user = fromUser {
-                Circle()
-                    .fill(
-                        LinearGradient(
-                            gradient: Gradient(colors: [Color.lyftRed.opacity(0.2), Color.lyftRed.opacity(0.1)]),
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
+                // Profile Photo or Placeholder
+                if let photoURL = user.profilePhotoURL, !photoURL.isEmpty, !photoURL.hasPrefix("profile_photo_") {
+                    AsyncImage(url: URL(string: photoURL)) { image in
+                        image
+                            .resizable()
+                            .aspectRatio(contentMode: .fill)
+                            .frame(width: 52, height: 52)
+                            .clipShape(Circle())
+                            .shadow(color: .lyftRed.opacity(0.15), radius: 4, x: 0, y: 2)
+                    } placeholder: {
+                        Circle()
+                            .fill(
+                                LinearGradient(
+                                    gradient: Gradient(colors: [Color.lyftRed.opacity(0.2), Color.lyftRed.opacity(0.1)]),
+                                    startPoint: .topLeading,
+                                    endPoint: .bottomTrailing
+                                )
+                            )
+                            .frame(width: 52, height: 52)
+                            .shadow(color: .lyftRed.opacity(0.15), radius: 4, x: 0, y: 2)
+                            .overlay(
+                                Text(String(user.firstName.prefix(1) + user.lastName.prefix(1)))
+                                    .font(.system(size: 18, weight: .semibold))
+                                    .foregroundColor(.lyftRed)
+                            )
+                    }
+                } else {
+                    Circle()
+                        .fill(
+                            LinearGradient(
+                                gradient: Gradient(colors: [Color.lyftRed.opacity(0.2), Color.lyftRed.opacity(0.1)]),
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
                         )
-                    )
-                    .frame(width: 52, height: 52)
-                    .shadow(color: .lyftRed.opacity(0.15), radius: 4, x: 0, y: 2)
-                    .overlay(
-                        Text(String(user.firstName.prefix(1) + user.lastName.prefix(1)))
-                            .font(.system(size: 18, weight: .semibold))
-                            .foregroundColor(.lyftRed)
-                    )
+                        .frame(width: 52, height: 52)
+                        .shadow(color: .lyftRed.opacity(0.15), radius: 4, x: 0, y: 2)
+                        .overlay(
+                            Text(String(user.firstName.prefix(1) + user.lastName.prefix(1)))
+                                .font(.system(size: 18, weight: .semibold))
+                                .foregroundColor(.lyftRed)
+                        )
+                }
             }
             
             VStack(alignment: .leading, spacing: 4) {

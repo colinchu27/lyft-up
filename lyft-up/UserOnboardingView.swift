@@ -20,25 +20,31 @@ struct UserOnboardingView: View {
     @State private var showError = false
     @State private var isCheckingUsername = false
     @State private var usernameStatus: UsernameStatus = .none
+    @State private var profilePhotoURL: String = ""
     
     var body: some View {
         NavigationView {
             ZStack {
-                // Background
-                Color.lyftGray.ignoresSafeArea()
+                // Enhanced background
+                LinearGradient(
+                    gradient: Gradient(colors: [Color.lyftGradientStart, Color.lyftGradientEnd]),
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
+                .ignoresSafeArea()
                 
                 ScrollView {
                     VStack(spacing: 32) {
                         // Header
                         VStack(spacing: 20) {
-                            ZStack {
-                                Circle()
-                                    .fill(Color.lyftRed.opacity(0.1))
-                                    .frame(width: 120, height: 120)
-                                
-                                Image(systemName: "person.crop.circle.badge.plus")
-                                    .font(.system(size: 50))
-                                    .foregroundColor(.lyftRed)
+                            // Profile Photo Selection
+                            ProfilePhotoView(
+                                userId: firebaseService.currentUser?.uid ?? "",
+                                currentPhotoURL: nil,
+                                size: 120
+                            ) { photoURL in
+                                // Store the photo URL for later use when creating the profile
+                                profilePhotoURL = photoURL
                             }
                             
                             VStack(spacing: 12) {
@@ -174,7 +180,8 @@ struct UserOnboardingView: View {
             friendIds: [],
             createdAt: Date(),
             fitnessGoal: "",
-            isGoalPublic: false
+            isGoalPublic: false,
+            profilePhotoURL: profilePhotoURL.isEmpty ? nil : profilePhotoURL
         )
         
         Task {

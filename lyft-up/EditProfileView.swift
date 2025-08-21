@@ -27,11 +27,44 @@ struct EditProfileView: View {
     var body: some View {
         NavigationView {
             ZStack {
-                // Background
-                Color.lyftGray.ignoresSafeArea()
+                // Enhanced background
+                LinearGradient(
+                    gradient: Gradient(colors: [Color.lyftGradientStart, Color.lyftGradientEnd]),
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
+                .ignoresSafeArea()
                 
                 ScrollView {
                     VStack(spacing: 24) {
+                        // Profile Photo Card
+                        VStack(alignment: .leading, spacing: 20) {
+                            Text("Profile Photo")
+                                .font(.system(size: 20, weight: .bold))
+                                .foregroundColor(.lyftText)
+                            
+                            HStack {
+                                Spacer()
+                                ProfilePhotoView(
+                                    userId: firebaseService.userProfile?.id ?? "",
+                                    currentPhotoURL: firebaseService.userProfile?.profilePhotoURL,
+                                    size: 100
+                                ) { photoURL in
+                                    // Update the user profile with the new photo URL
+                                    if let userId = firebaseService.userProfile?.id {
+                                        Task {
+                                            await firebaseService.updateUserProfilePhotoURL(userId: userId, photoURL: photoURL)
+                                        }
+                                    }
+                                }
+                                Spacer()
+                            }
+                        }
+                        .padding(.vertical, 24)
+                        .padding(.horizontal, 24)
+                        .lyftCard()
+                        .padding(.horizontal, 20)
+                        
                         // Personal Information Card
                         VStack(alignment: .leading, spacing: 20) {
                             Text("Personal Information")

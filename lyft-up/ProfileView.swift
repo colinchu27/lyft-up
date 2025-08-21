@@ -34,22 +34,18 @@ struct ProfileView: View {
                     VStack(spacing: 24) {
                         // Enhanced Profile Header Card
                         VStack(spacing: 24) {
-                            // Enhanced Profile Avatar
-                            ZStack {
-                                Circle()
-                                    .fill(
-                                        LinearGradient(
-                                            gradient: Gradient(colors: [Color.lyftRed.opacity(0.2), Color.lyftRed.opacity(0.1)]),
-                                            startPoint: .topLeading,
-                                            endPoint: .bottomTrailing
-                                        )
-                                    )
-                                    .frame(width: 120, height: 120)
-                                    .shadow(color: .lyftRed.opacity(0.3), radius: 12, x: 0, y: 6)
-                                
-                                Image(systemName: "person.crop.circle.fill")
-                                    .font(.system(size: 70))
-                                    .foregroundColor(.lyftRed)
+                            // Profile Photo
+                            ProfilePhotoView(
+                                userId: firebaseService.userProfile?.id ?? "",
+                                currentPhotoURL: firebaseService.userProfile?.profilePhotoURL,
+                                size: 120
+                            ) { photoURL in
+                                // Update the user profile with the new photo URL
+                                if let userId = firebaseService.userProfile?.id {
+                                    Task {
+                                        await firebaseService.updateUserProfilePhotoURL(userId: userId, photoURL: photoURL)
+                                    }
+                                }
                             }
                             
                             VStack(spacing: 12) {

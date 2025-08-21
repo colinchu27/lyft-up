@@ -128,6 +128,8 @@ struct FirebaseDataConverter {
         let totalWeightLifted = data["totalWeightLifted"] as? Double ?? 0.0
         let lastWorkoutDate = (data["lastWorkoutDate"] as? TimeInterval).map { Date(timeIntervalSince1970: $0) }
         
+        let profilePhotoURL = data["profilePhotoURL"] as? String
+        
         return UserProfile(
             id: id,
             username: username,
@@ -140,7 +142,8 @@ struct FirebaseDataConverter {
             isGoalPublic: isGoalPublic,
             totalWorkouts: totalWorkouts,
             totalWeightLifted: totalWeightLifted,
-            lastWorkoutDate: lastWorkoutDate
+            lastWorkoutDate: lastWorkoutDate,
+            profilePhotoURL: profilePhotoURL
         )
     }
     
