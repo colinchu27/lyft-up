@@ -186,24 +186,33 @@ struct ProgressDashboardView: View {
                 GridItem(.flexible())
             ], spacing: 16) {
                 AchievementBadge(
-                    title: "First Workout",
-                    icon: "star.fill",
-                    isUnlocked: analyticsService.progressMetrics.totalWorkouts > 0,
-                    color: .yellow
+                    title: "100 Workouts",
+                    icon: "flame.fill",
+                    isUnlocked: analyticsService.progressMetrics.totalWorkouts >= 100,
+                    color: .orange,
+                    progress: min(Double(analyticsService.progressMetrics.totalWorkouts) / 100.0, 1.0),
+                    showProgress: analyticsService.progressMetrics.totalWorkouts < 100
                 )
                 
-                AchievementBadge(
-                    title: "10 Workouts",
-                    icon: "flame.fill",
-                    isUnlocked: analyticsService.progressMetrics.totalWorkouts >= 10,
-                    color: .orange
-                )
+                // Only show 250 workouts achievement if 100 workouts is completed
+                if analyticsService.progressMetrics.totalWorkouts >= 100 {
+                    AchievementBadge(
+                        title: "250 Workouts",
+                        icon: "flame.fill",
+                        isUnlocked: analyticsService.progressMetrics.totalWorkouts >= 250,
+                        color: .red,
+                        progress: min(Double(analyticsService.progressMetrics.totalWorkouts - 100) / 150.0, 1.0),
+                        showProgress: analyticsService.progressMetrics.totalWorkouts < 250
+                    )
+                }
                 
                 AchievementBadge(
                     title: "7-Day Streak",
                     icon: "bolt.fill",
                     isUnlocked: analyticsService.progressMetrics.streakDays >= 7,
-                    color: .purple
+                    color: .purple,
+                    progress: min(Double(analyticsService.progressMetrics.streakDays) / 7.0, 1.0),
+                    showProgress: analyticsService.progressMetrics.streakDays < 7
                 )
             }
         }
@@ -453,6 +462,8 @@ struct AchievementBadge: View {
     let icon: String
     let isUnlocked: Bool
     let color: Color
+    let progress: Double
+    let showProgress: Bool
     
     var body: some View {
         VStack(spacing: 8) {
@@ -471,6 +482,17 @@ struct AchievementBadge: View {
                 .fontWeight(.medium)
                 .foregroundColor(isUnlocked ? .lyftText : .gray)
                 .multilineTextAlignment(.center)
+            
+            if showProgress && !isUnlocked {
+                ProgressView(value: progress)
+                    .progressViewStyle(LinearProgressViewStyle(tint: color))
+                    .frame(height: 4)
+                    .padding(.horizontal, 8)
+                
+                Text("\(Int(progress * 100))%")
+                    .font(.caption2)
+                    .foregroundColor(.lyftTextSecondary)
+            }
         }
         .padding()
         .background(Color.white)

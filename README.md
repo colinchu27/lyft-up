@@ -33,7 +33,7 @@
 
 ### 👥 Social Features
 - Friend system with requests  
-- View friends' workout history  
+- View friend's workout history  
 - Real-time connection status  
 - Privacy controls  
 - Friend profile views with workout sharing
@@ -68,7 +68,7 @@ Inspired by apps like **RepCount**, Lyft-Up lets you:
 …but with a twist:  
 > 👥 Follow friends, view their workout history, and share your own progress!
 
-This is my **first iOS app** built from scratch using **SwiftUI**. It's a personal project meant to solve a real user need I've experienced: making workouts more interactive, social, and accountable — without the bloat or distractions of other fitness apps.
+This is my **first iOS app** that I built using **SwiftUI**. It's a personal project meant to solve a real user need I've experienced: making workouts more interactive, social, and accountable!
 
 ---
 
@@ -95,7 +95,7 @@ This is my **first iOS app** built from scratch using **SwiftUI**. It's a person
 - Secure email/password authentication  
 - Personal profiles with bios and fitness goals  
 - Friend system with search, add, and request management  
-- View your friends' workout history and progress  
+- View your friend's workout history and progress  
 - Real-time connection status indicators  
 - Privacy controls for your goals and progress visibility  
 - Friend profile views with detailed workout sharing
