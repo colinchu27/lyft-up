@@ -17,7 +17,7 @@ struct FriendRowView: View {
         }) {
             HStack(spacing: 16) {
                 // Profile Photo or Placeholder
-                if let photoURL = friend.profilePhotoURL, !photoURL.isEmpty, !photoURL.hasPrefix("profile_photo_") {
+                if let photoURL = friend.profilePhotoURL, !photoURL.isEmpty, !photoURL.hasPrefix("local_photo_") {
                     AsyncImage(url: URL(string: photoURL)) { image in
                         image
                             .resizable()
@@ -124,7 +124,7 @@ struct FriendRequestRow: View {
                     )
             } else if let user = fromUser {
                 // Profile Photo or Placeholder
-                if let photoURL = user.profilePhotoURL, !photoURL.isEmpty, !photoURL.hasPrefix("profile_photo_") {
+                if let photoURL = user.profilePhotoURL, !photoURL.isEmpty, !photoURL.hasPrefix("local_photo_") {
                     AsyncImage(url: URL(string: photoURL)) { image in
                         image
                             .resizable()

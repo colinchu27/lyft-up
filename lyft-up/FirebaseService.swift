@@ -340,7 +340,7 @@ class FirebaseService: ObservableObject {
                 "profilePhotoURL": photoURL
             ])
             
-            // Update local user profile
+            // Update local user profile immediately
             await MainActor.run {
                 if var updatedProfile = self.userProfile {
                     updatedProfile.profilePhotoURL = photoURL
@@ -353,6 +353,8 @@ class FirebaseService: ObservableObject {
             print("❌ Error updating profile photo URL: \(error)")
         }
     }
+    
+
     
     func debugAllFriendRequests() async {
         await friendService.debugAllFriendRequests()

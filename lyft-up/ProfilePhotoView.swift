@@ -20,18 +20,21 @@ struct ProfilePhotoView: View {
     @State private var showingActionSheet = false
     @State private var showingDeleteAlert = false
     @State private var profileImage: UIImage?
+    @State private var currentPhotoURLState: String?
     
     init(userId: String, currentPhotoURL: String? = nil, size: CGFloat = 120, onPhotoUpdated: ((String) -> Void)? = nil) {
         self.userId = userId
         self.currentPhotoURL = currentPhotoURL
         self.size = size
         self.onPhotoUpdated = onPhotoUpdated
+        self._currentPhotoURLState = State(initialValue: currentPhotoURL)
     }
     
     var body: some View {
         ZStack {
             // Profile Photo or Placeholder
             if let image = profileImage {
+                // Show the image being uploaded
                 Image(uiImage: image)
                     .resizable()
                     .aspectRatio(contentMode: .fill)
@@ -42,8 +45,20 @@ struct ProfilePhotoView: View {
                             .stroke(Color.lyftRed.opacity(0.2), lineWidth: 2)
                     )
                     .shadow(color: .lyftRed.opacity(0.2), radius: 8, x: 0, y: 4)
-            } else if let photoURL = currentPhotoURL, !photoURL.isEmpty, !photoURL.hasPrefix("profile_photo_") {
-                // Only show AsyncImage for real URLs, not our placeholder URLs
+            } else if let localImage = photoManager.getProfileImage(for: userId) {
+                // Show locally stored image
+                Image(uiImage: localImage)
+                    .resizable()
+                    .aspectRatio(contentMode: .fill)
+                    .frame(width: size, height: size)
+                    .clipShape(Circle())
+                    .overlay(
+                        Circle()
+                            .stroke(Color.lyftRed.opacity(0.2), lineWidth: 2)
+                    )
+                    .shadow(color: .lyftRed.opacity(0.2), radius: 8, x: 0, y: 4)
+            } else if let photoURL = currentPhotoURLState, !photoURL.isEmpty, !photoURL.hasPrefix("local_photo_") {
+                // Show AsyncImage for real URLs (not our local photo IDs)
                 AsyncImage(url: URL(string: photoURL)) { image in
                     image
                         .resizable()
@@ -142,6 +157,21 @@ struct ProfilePhotoView: View {
                 Text(errorMessage)
             }
         }
+        .onReceive(NotificationCenter.default.publisher(for: .profilePhotoUpdated)) { notification in
+            if let userId = notification.userInfo?["userId"] as? String,
+               userId == self.userId {
+                if let photoURL = notification.userInfo?["photoURL"] as? String {
+                    currentPhotoURLState = photoURL
+                    // Clear local image when we get a URL update
+                    if !photoURL.isEmpty {
+                        profileImage = nil
+                    } else {
+                        // If photoURL is empty, it means photo was deleted
+                        profileImage = nil
+                    }
+                }
+            }
+        }
     }
     
     private var placeholderView: some View {
@@ -167,7 +197,12 @@ struct ProfilePhotoView: View {
         photoManager.uploadProfilePhoto(userId: userId, image: image) { result in
             switch result {
             case .success(let photoURL):
-                onPhotoUpdated?(photoURL)
+                DispatchQueue.main.async {
+                    // Clear the local image since we now have a URL
+                    self.profileImage = nil
+                    // Notify parent view of the update
+                    self.onPhotoUpdated?(photoURL)
+                }
             case .failure(let error):
                 print("Failed to upload photo: \(error.localizedDescription)")
             }

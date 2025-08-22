@@ -87,6 +87,8 @@ struct HomeView: View {
                         if let userId = firebaseService.userProfile?.id {
                             Task {
                                 await firebaseService.updateUserProfilePhotoURL(userId: userId, photoURL: photoURL)
+                                // Refresh the user profile to ensure all views update
+                                await firebaseService.refreshUserProfile()
                             }
                         }
                     }

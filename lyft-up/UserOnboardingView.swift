@@ -45,6 +45,7 @@ struct UserOnboardingView: View {
                             ) { photoURL in
                                 // Store the photo URL for later use when creating the profile
                                 profilePhotoURL = photoURL
+                                print("Profile photo URL set during onboarding: \(photoURL)")
                             }
                             
                             VStack(spacing: 12) {
