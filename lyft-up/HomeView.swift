@@ -81,17 +81,19 @@ struct HomeView: View {
                     ProfilePhotoView(
                         userId: firebaseService.userProfile?.id ?? "",
                         currentPhotoURL: firebaseService.userProfile?.profilePhotoURL,
-                        size: 60
-                    ) { photoURL in
-                        // Update the user profile with the new photo URL
-                        if let userId = firebaseService.userProfile?.id {
-                            Task {
-                                await firebaseService.updateUserProfilePhotoURL(userId: userId, photoURL: photoURL)
-                                // Refresh the user profile to ensure all views update
-                                await firebaseService.refreshUserProfile()
+                        size: 60,
+                        onPhotoUpdated: { photoURL in
+                            // Update the user profile with the new photo URL
+                            if let userId = firebaseService.userProfile?.id {
+                                Task {
+                                    await firebaseService.updateUserProfilePhotoURL(userId: userId, photoURL: photoURL)
+                                    // Refresh the user profile to ensure all views update
+                                    await firebaseService.refreshUserProfile()
+                                }
                             }
-                        }
-                    }
+                        },
+                        isEditable: false
+                    )
                 }
                 
                 // Motivational Quote
