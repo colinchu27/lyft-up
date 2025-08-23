@@ -303,6 +303,56 @@ class FirebaseService: ObservableObject {
         try await friendService.removeFriend(friendId, currentUserId: currentUserId, removeFriendFromUser: friendService.removeFriendFromUser)
     }
     
+    // MARK: - Activity Feed Methods
+    
+    func loadFriendsRecentActivity(daysBack: Int = 5) async throws -> [ActivityFeedItem] {
+        guard let currentUserId = currentUser?.uid else {
+            throw FirebaseError.userNotAuthenticated
+        }
+        
+        // Get user's friends
+        let friends = try await loadFriends()
+        
+        // Calculate the date 5 days ago
+        let calendar = Calendar.current
+        let fiveDaysAgo = calendar.date(byAdding: .day, value: -daysBack, to: Date()) ?? Date()
+        
+        var activityItems: [ActivityFeedItem] = []
+        
+        // For each friend, get their recent workout sessions
+        for friend in friends {
+            do {
+                let friendSessions = try await workoutService.loadWorkoutSessionsForUser(friend.id)
+                
+                // Filter sessions completed in the last 5 days
+                let recentSessions = friendSessions.filter { session in
+                    guard let endTime = session.endTime, session.isCompleted else { return false }
+                    return endTime >= fiveDaysAgo
+                }
+                
+                // Convert to ActivityFeedItem
+                for session in recentSessions {
+                    let activityItem = ActivityFeedItem(
+                        friendId: friend.id,
+                        friendUsername: friend.username,
+                        friendFirstName: friend.firstName,
+                        friendLastName: friend.lastName,
+                        workoutSession: session,
+                        completedAt: session.endTime ?? session.startTime
+                    )
+                    activityItems.append(activityItem)
+                }
+            } catch {
+                print("Error loading sessions for friend \(friend.username): \(error)")
+                // Continue with other friends even if one fails
+                continue
+            }
+        }
+        
+        // Sort by completion date (most recent first)
+        return activityItems.sorted { $0.completedAt > $1.completedAt }
+    }
+    
     // MARK: - Public Debug Methods
     
     func testFirebaseConnection() async -> Bool {

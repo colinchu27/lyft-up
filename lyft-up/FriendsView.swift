@@ -17,6 +17,8 @@ struct FriendsView: View {
     @State private var isLoadingRequests = false
     @State private var isFirebaseConnected = true
     @State private var selectedTab = 0
+    @State private var activityFeed: [ActivityFeedItem] = []
+    @State private var isLoadingFeed = false
     
     var body: some View {
         NavigationView {
@@ -146,41 +148,78 @@ struct FriendsView: View {
     
     // MARK: - Feed Tab Content
     private var feedTabContent: some View {
+        VStack {
+            if isLoadingFeed {
+                loadingFeedView
+            } else if activityFeed.isEmpty {
+                emptyFeedView
+            } else {
+                activityFeedListView
+            }
+        }
+        .onAppear {
+            loadActivityFeed()
+        }
+        .refreshable {
+            loadActivityFeed()
+        }
+    }
+    
+    private var loadingFeedView: some View {
         VStack(spacing: 20) {
-            // Placeholder for Feed content
-            VStack(spacing: 32) {
-                ZStack {
-                    Circle()
-                        .fill(
-                            LinearGradient(
-                                gradient: Gradient(colors: [Color.lyftRed.opacity(0.2), Color.lyftRed.opacity(0.1)]),
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            )
+            ProgressView()
+                .progressViewStyle(CircularProgressViewStyle(tint: .lyftRed))
+                .scaleEffect(1.2)
+            
+            Text("Loading activity feed...")
+                .font(.system(size: 16, weight: .medium))
+                .foregroundColor(.lyftText)
+        }
+    }
+    
+    private var emptyFeedView: some View {
+        VStack(spacing: 32) {
+            ZStack {
+                Circle()
+                    .fill(
+                        LinearGradient(
+                            gradient: Gradient(colors: [Color.lyftRed.opacity(0.2), Color.lyftRed.opacity(0.1)]),
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
                         )
-                        .frame(width: 120, height: 120)
-                        .shadow(color: .lyftRed.opacity(0.2), radius: 8, x: 0, y: 4)
-                    
-                    Image(systemName: "newspaper.fill")
-                        .font(.system(size: 50))
-                        .foregroundColor(.lyftRed)
-                }
+                    )
+                    .frame(width: 120, height: 120)
+                    .shadow(color: .lyftRed.opacity(0.2), radius: 8, x: 0, y: 4)
                 
-                VStack(spacing: 16) {
-                    Text("Activity Feed")
-                        .font(.system(size: 28, weight: .bold))
-                        .foregroundColor(.lyftText)
-                    
-                    Text("Coming soon! See your friends' recent workouts and achievements here.")
-                        .font(.system(size: 16))
-                        .foregroundColor(.lyftText.opacity(0.7))
-                        .multilineTextAlignment(.center)
-                        .padding(.horizontal, 32)
+                Image(systemName: "newspaper.fill")
+                    .font(.system(size: 50))
+                    .foregroundColor(.lyftRed)
+            }
+            
+            VStack(spacing: 16) {
+                Text("No Recent Activity")
+                    .font(.system(size: 28, weight: .bold))
+                    .foregroundColor(.lyftText)
+                
+                Text("Your friends haven't completed any workouts in the past 5 days. Be the first to get active!")
+                    .font(.system(size: 16))
+                    .foregroundColor(.lyftText.opacity(0.7))
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, 32)
+            }
+        }
+        .padding()
+    }
+    
+    private var activityFeedListView: some View {
+        ScrollView {
+            LazyVStack(spacing: 16) {
+                ForEach(activityFeed) { activityItem in
+                    ActivityFeedItemView(activityItem: activityItem)
                 }
             }
-            .padding()
-            
-            Spacer()
+            .padding(.horizontal, 20)
+            .padding(.vertical, 16)
         }
     }
     
@@ -366,6 +405,28 @@ struct FriendsView: View {
             let isConnected = await firebaseService.testFirebaseConnection()
             await MainActor.run {
                 self.isFirebaseConnected = isConnected
+            }
+        }
+    }
+    
+    // MARK: - Activity Feed Functions
+    
+    private func loadActivityFeed() {
+        isLoadingFeed = true
+        
+        Task {
+            do {
+                let feed = try await firebaseService.loadFriendsRecentActivity(daysBack: 5)
+                await MainActor.run {
+                    self.activityFeed = feed
+                    self.isLoadingFeed = false
+                }
+            } catch {
+                print("Error loading activity feed: \(error)")
+                await MainActor.run {
+                    self.activityFeed = []
+                    self.isLoadingFeed = false
+                }
             }
         }
     }

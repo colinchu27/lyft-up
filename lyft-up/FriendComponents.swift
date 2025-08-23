@@ -9,59 +9,23 @@ import SwiftUI
 
 struct FriendRowView: View {
     let friend: UserProfile
-    @State private var showingFriendProfile = false
+    @State private var showingProfile = false
     
     var body: some View {
         Button(action: {
-            showingFriendProfile = true
+            showingProfile = true
         }) {
             HStack(spacing: 16) {
-                // Profile Photo or Placeholder
-                if let photoURL = friend.profilePhotoURL, !photoURL.isEmpty, !photoURL.hasPrefix("local_photo_") {
-                    AsyncImage(url: URL(string: photoURL)) { image in
-                        image
-                            .resizable()
-                            .aspectRatio(contentMode: .fill)
-                            .frame(width: 52, height: 52)
-                            .clipShape(Circle())
-                            .shadow(color: .lyftRed.opacity(0.15), radius: 4, x: 0, y: 2)
-                    } placeholder: {
-                        Circle()
-                            .fill(
-                                LinearGradient(
-                                    gradient: Gradient(colors: [Color.lyftRed.opacity(0.2), Color.lyftRed.opacity(0.1)]),
-                                    startPoint: .topLeading,
-                                    endPoint: .bottomTrailing
-                                )
-                            )
-                            .frame(width: 52, height: 52)
-                            .shadow(color: .lyftRed.opacity(0.15), radius: 4, x: 0, y: 2)
-                            .overlay(
-                                Text(String(friend.firstName.prefix(1) + friend.lastName.prefix(1)))
-                                    .font(.system(size: 18, weight: .semibold))
-                                    .foregroundColor(.lyftRed)
-                            )
-                    }
-                } else {
-                    Circle()
-                        .fill(
-                            LinearGradient(
-                                gradient: Gradient(colors: [Color.lyftRed.opacity(0.2), Color.lyftRed.opacity(0.1)]),
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            )
-                        )
-                        .frame(width: 52, height: 52)
-                        .shadow(color: .lyftRed.opacity(0.15), radius: 4, x: 0, y: 2)
-                        .overlay(
-                            Text(String(friend.firstName.prefix(1) + friend.lastName.prefix(1)))
-                                .font(.system(size: 18, weight: .semibold))
-                                .foregroundColor(.lyftRed)
-                        )
-                }
+                // Profile Photo
+                ProfilePhotoView(
+                    userId: friend.id,
+                    currentPhotoURL: friend.profilePhotoURL,
+                    size: 50
+                ) { _ in }
                 
+                // Friend Info
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("\(friend.firstName) \(friend.lastName)")
+                    Text(friendDisplayName)
                         .font(.system(size: 16, weight: .semibold))
                         .foregroundColor(.lyftText)
                     
@@ -69,7 +33,7 @@ struct FriendRowView: View {
                         .font(.system(size: 14))
                         .foregroundColor(.lyftText.opacity(0.6))
                     
-                    if !friend.fitnessGoal.isEmpty && friend.isGoalPublic {
+                    if !friend.fitnessGoal.isEmpty {
                         Text(friend.fitnessGoal)
                             .font(.system(size: 12))
                             .foregroundColor(.lyftText.opacity(0.7))
@@ -79,27 +43,32 @@ struct FriendRowView: View {
                 
                 Spacer()
                 
+                // Stats
                 VStack(alignment: .trailing, spacing: 4) {
                     Text("\(friend.totalWorkouts)")
-                        .font(.system(size: 14, weight: .semibold))
+                        .font(.system(size: 16, weight: .bold))
                         .foregroundColor(.lyftRed)
                     
                     Text("workouts")
                         .font(.system(size: 12))
                         .foregroundColor(.lyftText.opacity(0.6))
                 }
-                
-                Image(systemName: "chevron.right")
-                    .font(.system(size: 12))
-                    .foregroundColor(.lyftText.opacity(0.4))
             }
-            .padding(.vertical, 12)
-            .padding(.horizontal, 16)
-            .lyftCard()
+            .padding(.vertical, 8)
         }
         .buttonStyle(PlainButtonStyle())
-        .sheet(isPresented: $showingFriendProfile) {
+        .sheet(isPresented: $showingProfile) {
             FriendProfileView(friend: friend)
+        }
+    }
+    
+    private var friendDisplayName: String {
+        if !friend.firstName.isEmpty && !friend.lastName.isEmpty {
+            return "\(friend.firstName) \(friend.lastName)"
+        } else if !friend.firstName.isEmpty {
+            return friend.firstName
+        } else {
+            return friend.username
         }
     }
 }
@@ -108,73 +77,37 @@ struct FriendRequestRow: View {
     let request: FriendRequest
     let onAccept: () -> Void
     let onReject: () -> Void
-    @State private var fromUser: UserProfile?
+    @State private var requesterProfile: UserProfile?
     @State private var isLoading = true
     
     var body: some View {
         HStack(spacing: 16) {
-            if isLoading {
+            // Profile Photo
+            if let profile = requesterProfile {
+                ProfilePhotoView(
+                    userId: profile.id,
+                    currentPhotoURL: profile.profilePhotoURL,
+                    size: 50
+                ) { _ in }
+            } else {
                 Circle()
-                    .fill(Color.gray.opacity(0.2))
+                    .fill(Color.lyftText.opacity(0.2))
                     .frame(width: 50, height: 50)
                     .overlay(
                         ProgressView()
                             .progressViewStyle(CircularProgressViewStyle(tint: .lyftRed))
                             .scaleEffect(0.8)
                     )
-            } else if let user = fromUser {
-                // Profile Photo or Placeholder
-                if let photoURL = user.profilePhotoURL, !photoURL.isEmpty, !photoURL.hasPrefix("local_photo_") {
-                    AsyncImage(url: URL(string: photoURL)) { image in
-                        image
-                            .resizable()
-                            .aspectRatio(contentMode: .fill)
-                            .frame(width: 52, height: 52)
-                            .clipShape(Circle())
-                            .shadow(color: .lyftRed.opacity(0.15), radius: 4, x: 0, y: 2)
-                    } placeholder: {
-                        Circle()
-                            .fill(
-                                LinearGradient(
-                                    gradient: Gradient(colors: [Color.lyftRed.opacity(0.2), Color.lyftRed.opacity(0.1)]),
-                                    startPoint: .topLeading,
-                                    endPoint: .bottomTrailing
-                                )
-                            )
-                            .frame(width: 52, height: 52)
-                            .shadow(color: .lyftRed.opacity(0.15), radius: 4, x: 0, y: 2)
-                            .overlay(
-                                Text(String(user.firstName.prefix(1) + user.lastName.prefix(1)))
-                                    .font(.system(size: 18, weight: .semibold))
-                                    .foregroundColor(.lyftRed)
-                            )
-                    }
-                } else {
-                    Circle()
-                        .fill(
-                            LinearGradient(
-                                gradient: Gradient(colors: [Color.lyftRed.opacity(0.2), Color.lyftRed.opacity(0.1)]),
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            )
-                        )
-                        .frame(width: 52, height: 52)
-                        .shadow(color: .lyftRed.opacity(0.15), radius: 4, x: 0, y: 2)
-                        .overlay(
-                            Text(String(user.firstName.prefix(1) + user.lastName.prefix(1)))
-                                .font(.system(size: 18, weight: .semibold))
-                                .foregroundColor(.lyftRed)
-                        )
-                }
             }
             
+            // Requester Info
             VStack(alignment: .leading, spacing: 4) {
-                if let user = fromUser {
-                    Text("\(user.firstName) \(user.lastName)")
+                if let profile = requesterProfile {
+                    Text(profileDisplayName(profile))
                         .font(.system(size: 16, weight: .semibold))
                         .foregroundColor(.lyftText)
                     
-                    Text("@\(user.username)")
+                    Text("@\(profile.username)")
                         .font(.system(size: 14))
                         .foregroundColor(.lyftText.opacity(0.6))
                 } else {
@@ -182,53 +115,144 @@ struct FriendRequestRow: View {
                         .font(.system(size: 16, weight: .semibold))
                         .foregroundColor(.lyftText.opacity(0.6))
                 }
+                
+                Text("Wants to be your friend")
+                    .font(.system(size: 12))
+                    .foregroundColor(.lyftText.opacity(0.7))
             }
             
             Spacer()
             
+            // Action Buttons
             HStack(spacing: 8) {
                 Button(action: onAccept) {
-                    Text("Accept")
-                        .font(.system(size: 14, weight: .semibold))
+                    Image(systemName: "checkmark")
+                        .font(.system(size: 14, weight: .bold))
                         .foregroundColor(.white)
-                        .padding(.horizontal, 16)
-                        .padding(.vertical, 8)
-                        .background(Color.lyftRed)
-                        .cornerRadius(20)
+                        .frame(width: 32, height: 32)
+                        .background(Color.green)
+                        .clipShape(Circle())
                 }
                 
                 Button(action: onReject) {
-                    Text("Reject")
-                        .font(.system(size: 14, weight: .semibold))
-                        .foregroundColor(.lyftText)
-                        .padding(.horizontal, 16)
-                        .padding(.vertical, 8)
-                        .background(Color.gray.opacity(0.2))
-                        .cornerRadius(20)
+                    Image(systemName: "xmark")
+                        .font(.system(size: 14, weight: .bold))
+                        .foregroundColor(.white)
+                        .frame(width: 32, height: 32)
+                        .background(Color.red)
+                        .clipShape(Circle())
                 }
             }
         }
         .padding(.vertical, 8)
         .onAppear {
-            loadFromUser()
+            loadRequesterProfile()
         }
     }
     
-    private func loadFromUser() {
+    private func loadRequesterProfile() {
         Task {
             do {
-                let user = try await FirebaseService.shared.loadUserProfileById(request.fromUserId)
+                let profile = try await FirebaseService.shared.loadUserProfileById(request.fromUserId)
                 await MainActor.run {
-                    self.fromUser = user
+                    self.requesterProfile = profile
                     self.isLoading = false
                 }
             } catch {
-                print("Error loading from user: \(error)")
+                print("Error loading requester profile: \(error)")
                 await MainActor.run {
                     self.isLoading = false
                 }
             }
         }
+    }
+    
+    private func profileDisplayName(_ profile: UserProfile) -> String {
+        if !profile.firstName.isEmpty && !profile.lastName.isEmpty {
+            return "\(profile.firstName) \(profile.lastName)"
+        } else if !profile.firstName.isEmpty {
+            return profile.firstName
+        } else {
+            return profile.username
+        }
+    }
+}
+
+struct ActivityFeedItemView: View {
+    let activityItem: ActivityFeedItem
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            // Header with friend info and date
+            HStack {
+                // Friend Profile Photo
+                ProfilePhotoView(
+                    userId: activityItem.friendId,
+                    currentPhotoURL: nil, // We don't have profile photo URL in the activity item
+                    size: 40
+                ) { _ in }
+                
+                // Friend Name and Date
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(friendDisplayName)
+                        .font(.system(size: 16, weight: .semibold))
+                        .foregroundColor(.lyftText)
+                    
+                    Text(timeAgoString)
+                        .font(.system(size: 12))
+                        .foregroundColor(.lyftText.opacity(0.6))
+                }
+                
+                Spacer()
+                
+                // Workout Icon
+                Image(systemName: "dumbbell.fill")
+                    .font(.system(size: 16))
+                    .foregroundColor(.lyftRed)
+            }
+            
+            // Workout Details
+            VStack(alignment: .leading, spacing: 8) {
+                Text("Completed \(activityItem.workoutSession.routineName)")
+                    .font(.system(size: 14, weight: .medium))
+                    .foregroundColor(.lyftText)
+                
+                // Exercise count
+                Text("\(activityItem.workoutSession.exercises.count) exercises")
+                    .font(.system(size: 12))
+                    .foregroundColor(.lyftText.opacity(0.7))
+                
+                // Workout duration if available
+                if let endTime = activityItem.workoutSession.endTime {
+                    let duration = endTime.timeIntervalSince(activityItem.workoutSession.startTime)
+                    let minutes = Int(duration / 60)
+                    Text("Duration: \(minutes) minutes")
+                        .font(.system(size: 12))
+                        .foregroundColor(.lyftText.opacity(0.7))
+                }
+            }
+            .padding(.leading, 52) // Align with text below profile photo
+        }
+        .padding(.vertical, 12)
+        .padding(.horizontal, 16)
+        .background(Color.white.opacity(0.05))
+        .cornerRadius(12)
+    }
+    
+    private var friendDisplayName: String {
+        if !activityItem.friendFirstName.isEmpty && !activityItem.friendLastName.isEmpty {
+            return "\(activityItem.friendFirstName) \(activityItem.friendLastName)"
+        } else if !activityItem.friendFirstName.isEmpty {
+            return activityItem.friendFirstName
+        } else {
+            return activityItem.friendUsername
+        }
+    }
+    
+    private var timeAgoString: String {
+        let formatter = RelativeDateTimeFormatter()
+        formatter.unitsStyle = .abbreviated
+        return formatter.localizedString(for: activityItem.completedAt, relativeTo: Date())
     }
 }
 

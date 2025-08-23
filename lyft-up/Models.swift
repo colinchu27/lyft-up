@@ -212,6 +212,26 @@ struct ExerciseProgress: Codable, Identifiable {
     }
 }
 
+// MARK: - Activity Feed Models
+struct ActivityFeedItem: Codable, Identifiable {
+    let id = UUID()
+    let friendId: String
+    let friendUsername: String
+    let friendFirstName: String
+    let friendLastName: String
+    let workoutSession: WorkoutSession
+    let completedAt: Date
+    
+    init(friendId: String, friendUsername: String, friendFirstName: String, friendLastName: String, workoutSession: WorkoutSession, completedAt: Date) {
+        self.friendId = friendId
+        self.friendUsername = friendUsername
+        self.friendFirstName = friendFirstName
+        self.friendLastName = friendLastName
+        self.workoutSession = workoutSession
+        self.completedAt = completedAt
+    }
+}
+
 struct ProgressMetrics: Codable {
     var weeklyWorkouts: Int
     var monthlyWorkouts: Int
