@@ -20,8 +20,10 @@ struct FriendRowView: View {
                 ProfilePhotoView(
                     userId: friend.id,
                     currentPhotoURL: friend.profilePhotoURL,
-                    size: 50
-                ) { _ in }
+                    size: 50,
+                    onPhotoUpdated: { _ in },
+                    isEditable: false
+                )
                 
                 // Friend Info
                 VStack(alignment: .leading, spacing: 4) {
@@ -87,8 +89,10 @@ struct FriendRequestRow: View {
                 ProfilePhotoView(
                     userId: profile.id,
                     currentPhotoURL: profile.profilePhotoURL,
-                    size: 50
-                ) { _ in }
+                    size: 50,
+                    onPhotoUpdated: { _ in },
+                    isEditable: false
+                )
             } else {
                 Circle()
                     .fill(Color.lyftText.opacity(0.2))
@@ -189,8 +193,10 @@ struct ActivityFeedItemView: View {
                 ProfilePhotoView(
                     userId: activityItem.friendId,
                     currentPhotoURL: nil, // We don't have profile photo URL in the activity item
-                    size: 40
-                ) { _ in }
+                    size: 40,
+                    onPhotoUpdated: { _ in },
+                    isEditable: false
+                )
                 
                 // Friend Name and Date
                 VStack(alignment: .leading, spacing: 2) {

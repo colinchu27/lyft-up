@@ -13,6 +13,7 @@ struct ProfilePhotoView: View {
     let currentPhotoURL: String?
     let size: CGFloat
     let onPhotoUpdated: ((String) -> Void)?
+    let isEditable: Bool
     
     @StateObject private var photoManager = ProfilePhotoManager.shared
     @State private var selectedItem: PhotosPickerItem?
@@ -22,11 +23,12 @@ struct ProfilePhotoView: View {
     @State private var profileImage: UIImage?
     @State private var currentPhotoURLState: String?
     
-    init(userId: String, currentPhotoURL: String? = nil, size: CGFloat = 120, onPhotoUpdated: ((String) -> Void)? = nil) {
+    init(userId: String, currentPhotoURL: String? = nil, size: CGFloat = 120, onPhotoUpdated: ((String) -> Void)? = nil, isEditable: Bool = true) {
         self.userId = userId
         self.currentPhotoURL = currentPhotoURL
         self.size = size
         self.onPhotoUpdated = onPhotoUpdated
+        self.isEditable = isEditable
         self._currentPhotoURLState = State(initialValue: currentPhotoURL)
     }
     
@@ -91,25 +93,27 @@ struct ProfilePhotoView: View {
             }
             
             // Edit button overlay
-            VStack {
-                Spacer()
-                HStack {
+            if isEditable {
+                VStack {
                     Spacer()
-                    Button(action: { showingActionSheet = true }) {
-                        ZStack {
-                            Circle()
-                                .fill(Color.lyftRed)
-                                .frame(width: 32, height: 32)
-                                .shadow(color: .black.opacity(0.2), radius: 4, x: 0, y: 2)
-                            
-                            Image(systemName: "camera.fill")
-                                .font(.system(size: 14, weight: .medium))
-                                .foregroundColor(.white)
+                    HStack {
+                        Spacer()
+                        Button(action: { showingActionSheet = true }) {
+                            ZStack {
+                                Circle()
+                                    .fill(Color.lyftRed)
+                                    .frame(width: 32, height: 32)
+                                    .shadow(color: .black.opacity(0.2), radius: 4, x: 0, y: 2)
+                                
+                                Image(systemName: "camera.fill")
+                                    .font(.system(size: 14, weight: .medium))
+                                    .foregroundColor(.white)
+                            }
                         }
                     }
+                    .padding(.trailing, 4)
+                    .padding(.bottom, 4)
                 }
-                .padding(.trailing, 4)
-                .padding(.bottom, 4)
             }
         }
         .frame(width: size, height: size)
