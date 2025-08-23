@@ -10,7 +10,7 @@
 <td>
 
 ### 🏋️ Workout Tracking
-- Custom routines with exercise management  
+- Custom routines with dynamic exercise management  
 - Real-time set/reps/weight logging  
 - Workout sessions with start/end tracking  
 - Auto-load last session data  
@@ -25,8 +25,9 @@
 - Weekly/monthly progress views  
 - Achievement badges and milestones  
 - Advanced progress analytics service
-- Exercise progress tracking with trends
 - Comprehensive workout statistics
+- Detailed exercise progress view with individual exercise analytics
+- Time-based progress filtering and visualization
 
 </td>
 <td>
@@ -39,6 +40,7 @@
 - Friend profile views with workout sharing
 - Enhanced friend request management
 - Friend routine sharing and viewing
+- Profile photo management
 
 ### 📈 Data Management
 - Complete workout history with session details  
@@ -49,6 +51,8 @@
 - Firebase data conversion utilities
 - Improved error handling and debugging
 - User onboarding flow
+- Comprehensive user onboarding with profile setup
+- Profile photo storage and management system
 
 </td>
 </tr>
@@ -147,6 +151,8 @@ This is my **first iOS app** that I built using **SwiftUI**. It's a personal pro
 - Improved profile editing capabilities
 - Better workout history view with enhanced filtering
 - Streamlined routine builder with improved exercise management
+- Profile photo upload and management interface
+- Exercise progress visualization with detailed analytics
 
 </details>
 
@@ -180,6 +186,8 @@ Most gym apps either feel too **bloated** or too **isolated**. They don't help y
 - **UserDefaults** – Local data persistence  
 - **Enhanced Firebase services** – Better error handling and data conversion utilities
 - **Improved data synchronization** – Enhanced cloud sync capabilities
+- **Profile photo management** – Local image storage with Firebase sync
+- **Advanced analytics service** – Comprehensive progress tracking and metrics
 
 ### **Development & Testing**  
 - **iOS Simulator** – Development and testing  
