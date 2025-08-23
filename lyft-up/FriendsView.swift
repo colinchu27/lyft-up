@@ -16,6 +16,7 @@ struct FriendsView: View {
     @State private var isLoading = false
     @State private var isLoadingRequests = false
     @State private var isFirebaseConnected = true
+    @State private var selectedTab = 0
     
     var body: some View {
         NavigationView {
@@ -28,14 +29,21 @@ struct FriendsView: View {
                 )
                 .ignoresSafeArea()
                 
-                VStack {
-                    if isLoading {
-                        loadingView
-                    } else if friends.isEmpty && pendingRequests.isEmpty {
-                        emptyStateView
-                    } else {
-                        friendsListView
+                VStack(spacing: 0) {
+                    // Custom Tab Bar
+                    customTabBar
+                    
+                    // Tab Content
+                    TabView(selection: $selectedTab) {
+                        // Friends Tab
+                        friendsTabContent
+                            .tag(0)
+                        
+                        // Feed Tab
+                        feedTabContent
+                            .tag(1)
                     }
+                    .tabViewStyle(PageTabViewStyle(indexDisplayMode: .never))
                 }
             }
             .navigationTitle("Friends")
@@ -77,6 +85,106 @@ struct FriendsView: View {
         }
     }
     
+    // MARK: - Custom Tab Bar
+    private var customTabBar: some View {
+        HStack(spacing: 0) {
+            // Friends Tab
+            Button(action: {
+                withAnimation(.easeInOut(duration: 0.3)) {
+                    selectedTab = 0
+                }
+            }) {
+                VStack(spacing: 8) {
+                    Text("Friends")
+                        .font(.system(size: 16, weight: selectedTab == 0 ? .semibold : .medium))
+                        .foregroundColor(selectedTab == 0 ? .lyftRed : .lyftText.opacity(0.6))
+                    
+                    Rectangle()
+                        .fill(selectedTab == 0 ? Color.lyftRed : Color.clear)
+                        .frame(height: 3)
+                        .cornerRadius(1.5)
+                }
+            }
+            .frame(maxWidth: .infinity)
+            
+            // Feed Tab
+            Button(action: {
+                withAnimation(.easeInOut(duration: 0.3)) {
+                    selectedTab = 1
+                }
+            }) {
+                VStack(spacing: 8) {
+                    Text("Feed")
+                        .font(.system(size: 16, weight: selectedTab == 1 ? .semibold : .medium))
+                        .foregroundColor(selectedTab == 1 ? .lyftRed : .lyftText.opacity(0.6))
+                    
+                    Rectangle()
+                        .fill(selectedTab == 1 ? Color.lyftRed : Color.clear)
+                        .frame(height: 3)
+                        .cornerRadius(1.5)
+                }
+            }
+            .frame(maxWidth: .infinity)
+        }
+        .padding(.horizontal, 20)
+        .padding(.top, 10)
+        .background(Color.clear)
+    }
+    
+    // MARK: - Friends Tab Content
+    private var friendsTabContent: some View {
+        VStack {
+            if isLoading {
+                loadingView
+            } else if friends.isEmpty && pendingRequests.isEmpty {
+                emptyStateView
+            } else {
+                friendsListView
+            }
+        }
+    }
+    
+    // MARK: - Feed Tab Content
+    private var feedTabContent: some View {
+        VStack(spacing: 20) {
+            // Placeholder for Feed content
+            VStack(spacing: 32) {
+                ZStack {
+                    Circle()
+                        .fill(
+                            LinearGradient(
+                                gradient: Gradient(colors: [Color.lyftRed.opacity(0.2), Color.lyftRed.opacity(0.1)]),
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
+                        )
+                        .frame(width: 120, height: 120)
+                        .shadow(color: .lyftRed.opacity(0.2), radius: 8, x: 0, y: 4)
+                    
+                    Image(systemName: "newspaper.fill")
+                        .font(.system(size: 50))
+                        .foregroundColor(.lyftRed)
+                }
+                
+                VStack(spacing: 16) {
+                    Text("Activity Feed")
+                        .font(.system(size: 28, weight: .bold))
+                        .foregroundColor(.lyftText)
+                    
+                    Text("Coming soon! See your friends' recent workouts and achievements here.")
+                        .font(.system(size: 16))
+                        .foregroundColor(.lyftText.opacity(0.7))
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal, 32)
+                }
+            }
+            .padding()
+            
+            Spacer()
+        }
+    }
+    
+    // MARK: - Existing Views (unchanged)
     private var loadingView: some View {
         VStack(spacing: 20) {
             ProgressView()
@@ -173,6 +281,7 @@ struct FriendsView: View {
         }
     }
     
+    // MARK: - Existing Functions (unchanged)
     private func loadFriends() {
         guard let currentUser = firebaseService.userProfile else { return }
         
