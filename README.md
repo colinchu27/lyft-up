@@ -62,7 +62,7 @@
 
 ## 📱 What is Lyft-Up?
 
-Lyft-Up is an iOS app that combines **clean workout tracking** with **social features** to help you and your friends stay consistent and motivated in the gym.
+Lyft-Up is an iOS app that combines **clean workout tracking** with **social features** to help you and your friends stay consistent and motivated in the gym. This is my **first iOS app** that I built using **SwiftUI**. It's a personal project meant to solve a real user need I've experienced: making workouts more interactive, social, and accountable!
 
 Inspired by apps like **RepCount**, Lyft-Up lets you:  
 - Build your own routines  
@@ -71,8 +71,6 @@ Inspired by apps like **RepCount**, Lyft-Up lets you:
 
 …but with a twist:  
 > 👥 Follow friends, view their workout history, and share your own progress!
-
-This is my **first iOS app** that I built using **SwiftUI**. It's a personal project meant to solve a real user need I've experienced: making workouts more interactive, social, and accountable!
 
 ---
 
