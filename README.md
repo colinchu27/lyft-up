@@ -7,7 +7,7 @@
 
 <table>
 <tr>
-<td>
+<td width="50%" valign="top">
 
 ### 🏋️ Workout Tracking
 - Custom routines with dynamic exercise management  
@@ -15,8 +15,8 @@
 - Workout sessions with start/end tracking  
 - Auto-load last session data  
 - Add/remove exercises mid-workout  
-- Workout session storage with offline capability
-- Enhanced workout summary with detailed analytics
+- Workout session storage with offline capability  
+- Enhanced workout summary with detailed analytics  
 
 ### 📊 Progress Analytics
 - Interactive dashboard with charts  
@@ -24,23 +24,23 @@
 - Exercise-specific progress tracking  
 - Weekly/monthly progress views  
 - Achievement badges and milestones  
-- Advanced progress analytics service
-- Comprehensive workout statistics
-- Detailed exercise progress view with individual exercise analytics
-- Time-based progress filtering and visualization
+- Advanced progress analytics service  
+- Comprehensive workout statistics  
+- Detailed exercise progress view with individual exercise analytics  
+- Time-based progress filtering and visualization  
 
 </td>
-<td>
+<td width="50%" valign="top">
 
 ### 👥 Social Features
 - Friend system with requests  
 - View friend's workout history  
 - Real-time connection status  
 - Privacy controls  
-- Friend profile views with workout sharing
-- Enhanced friend request management
-- Friend routine sharing and viewing
-- Profile photo management
+- Friend profile views with workout sharing  
+- Enhanced friend request management  
+- Friend routine sharing and viewing  
+- Profile photo management  
 
 ### 📈 Data Management
 - Complete workout history with session details  
@@ -48,11 +48,11 @@
 - Automatic backups  
 - Routine storage and editing  
 - Workout summaries and analytics  
-- Firebase data conversion utilities
-- Improved error handling and debugging
-- User onboarding flow
-- Comprehensive user onboarding with profile setup
-- Profile photo storage and management system
+- Firebase data conversion utilities  
+- Improved error handling and debugging  
+- User onboarding flow  
+- Comprehensive user onboarding with profile setup  
+- Profile photo storage and management system  
 
 </td>
 </tr>
